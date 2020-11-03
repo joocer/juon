@@ -4,15 +4,6 @@ Diablo
 NetworkX Query Language: Based on Gremlin
 https://tinkerpop.apache.org/gremlin.html
 
-
-gremlin> g.V().label().groupCount()
-==>[occupation:21, movie:3883, category:18, user:6040]
-
-gremlin> g.V().hasLabel('movie').values('year').min()
-==>1919
-
-gremlin> g.V().has('movie','name','Die Hard').inE('rated').values('stars').mean()
-==>4.121848739495798
 """
 
 class Diablo():
@@ -23,9 +14,22 @@ class Diablo():
     - graph: the graph to query and traverse
     """
 
-    def __init__(self, graph):
+    def __init__(self, graph, active_nodes=None):
         self.graph = graph
-        self.cursor = graph.nodes()
+        if active_nodes:
+            self.active_nodes = active_nodes
+        else:
+            # select everything
+            self.active_nodes = graph.nodes()
+        self.cached_nodes = None
+
+    def __get_cached_nodes(self):
+        """
+        Get the nodes which are referenced by the cursor
+        """
+        if not self.cached_nodes:
+            self.cached_nodes = [(x,y) for x,y in self.graph.nodes(data=True) if x in self.active_nodes]
+        return self.cached_nodes
 
     def has(self, key, value):
         """
@@ -37,24 +41,22 @@ class Diablo():
 
         returns diablo instance to enable function chaining
         """
-        cursor = [x for x,y in self.graph.nodes(data=True) if y.get(key) == value]
-        newd = Diablo(self.graph)
-        newd.cursor = cursor
+        active_nodes = [x for x,y in self.graph.nodes(data=True) if y.get(key) == value]
+        newd = Diablo(self.graph, active_nodes)
         return newd
 
-    def out(self, relationship, key='relationship'):
+    def out(self, *relationship, key='relationship'):
         """
         'out' traverses a graph by following edges with the passed relationship.
 
         parameters:
-        - relationsip: traverses node following edges with the stated relationship
+        - relationsip(s): traverses node following edges with the stated relationship
         - key: sets the key which defines the relationship attribute
 
         returns diablo instance to enable function chaining
         """
-        cursor = [y for x,y,e in self.graph.edges(data=True) if x in self.cursor and e.get(key) == relationship]
-        newd = Diablo(self.graph)
-        newd.cursor = cursor
+        active_nodes = [y for x,y,e in self.graph.edges(data=True) if x in self.active_nodes and e.get(key) in relationship]
+        newd = Diablo(self.graph, active_nodes)
         return newd
 
     def values(self, key):
@@ -66,27 +68,44 @@ class Diablo():
 
         returns a list of values
         """
-        return [y.get(key) for x,y in self.graph.nodes(data=True) if x in self.cursor]
+        return list(set([y.get(key) for x,y in self.__get_cached_nodes()]))
 
-    def hasLabel(self, label):
-        raise NotImplementedError()
+    def groupCount(self, key):
+        """
+        'groupCount' counts nodes per key attribute
 
-    def label(self):
-        raise NotImplementedError()
+        parameters:
+        - key: key to group by
 
-    def groupCount(self):
-        raise NotImplementedError()
+        returns a dictionary of counts
+        """
+        from collections import Counter
+        nodes = Counter([y.get(key) for x,y in self.__get_cached_nodes()])
+        return dict(nodes)
 
-    def inE(self, key):
-        raise NotImplementedError()
+    def _is(self, *identity):
+        """
+        'is' selects a single node.
+
+        parameters:
+        - identity(s): the identity of the node to select
+
+        returns diablo instance to enable function chaining
+        """
+        active_nodes = []
+        for ident in identity:
+            if ident in self.graph.nodes():
+                active_nodes.append(ident)
+        newd = Diablo(self.graph, ident)
+        return newd
 
     def nodes(self, data=False):
         """
         Returns the nodes currently selected
         """
         if data:
-            return [(x,y) for x,y in self.graph.nodes(data=data) if x in self.cursor]
-        return [x for x in self.graph.nodes() if x in self.cursor]
+            return self.__get_cached_nodes()
+        return [x for x in self.graph.nodes() if x in self.active_nodes]
 
     def edges(self, data=False):
         """
@@ -95,5 +114,7 @@ class Diablo():
         return self.graph.edges(data=data)
 
     def __len__(self):
-        return len(self.cursor)
+        return len(self.active_nodes)
 
+    def __str__(self):
+        return "diablo object"
