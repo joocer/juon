@@ -6,30 +6,48 @@ https://tinkerpop.apache.org/gremlin.html
 
 """
 
+
 class Diablo():
     """
     diablo: gremlin-like networkx tool
 
     parameters:
     - graph: the graph to query and traverse
+    - active_nodes: the nodes which are selected for this instance
     """
 
     def __init__(self, graph, active_nodes=None):
         self.graph = graph
+
         if active_nodes:
             self.active_nodes = active_nodes
         else:
             # select everything
             self.active_nodes = graph.nodes()
-        self.cached_nodes = None
+        self.cached_active_nodes = None
+        self.edges_cache = None
+        self.nodes_cache = None
 
-    def __get_cached_nodes(self):
+    def V(self, *nodes):
+        
+        self.edges_cache = {}
+        for x,y,e in self.graph.edges(data=True):
+            cache = self.edges_cache.get(e.get('relationship'))
+            if not cache:
+                cache = []
+            cache.append((x,y))
+            self.edges_cache[e.get('relationship')] = cache     
+
+        self.nodes_cache = self.graph.nodes(data=True)
+        return self._is(*nodes)
+
+    def __get_active_nodes(self):
         """
         Get the nodes which are referenced by the cursor
         """
-        if not self.cached_nodes:
-            self.cached_nodes = [(x,y) for x,y in self.graph.nodes(data=True) if x in self.active_nodes]
-        return self.cached_nodes
+        if not self.cached_active_nodes:
+            self.cached_active_nodes = [(x,y) for x,y in self.nodes_cache if x in self.active_nodes]
+        return self.cached_active_nodes
 
     def has(self, key, value):
         """
@@ -41,8 +59,10 @@ class Diablo():
 
         returns diablo instance to enable function chaining
         """
-        active_nodes = [x for x,y in self.graph.nodes(data=True) if y.get(key) == value]
+        active_nodes = [x for x,y in self.nodes_cache if y.get(key) == value]
         newd = Diablo(self.graph, active_nodes)
+        newd.nodes_cache = self.nodes_cache
+        newd.edges_cache = self.edges_cache
         return newd
 
     def out(self, *relationship, key='relationship'):
@@ -55,8 +75,15 @@ class Diablo():
 
         returns diablo instance to enable function chaining
         """
-        active_nodes = [y for x,y,e in self.graph.edges(data=True) if x in self.active_nodes and e.get(key) in relationship]
+        active_nodes = []
+        for rel in relationship:
+            edges = self.edges_cache.get(rel)
+            if edges:
+                active_nodes += [y for x,y in edges if x in self.active_nodes]
+
         newd = Diablo(self.graph, active_nodes)
+        newd.nodes_cache = self.nodes_cache
+        newd.edges_cache = self.edges_cache
         return newd
 
     def values(self, key):
@@ -68,7 +95,7 @@ class Diablo():
 
         returns a list of values
         """
-        return list(set([y.get(key) for x,y in self.__get_cached_nodes()]))
+        return list(set([y.get(key) for x,y in self.cached_active_nodes()]))
 
     def groupCount(self, key):
         """
@@ -80,7 +107,7 @@ class Diablo():
         returns a dictionary of counts
         """
         from collections import Counter
-        nodes = Counter([y.get(key) for x,y in self.__get_cached_nodes()])
+        nodes = Counter([y.get(key) for x,y in self.cached_active_nodes()])
         return dict(nodes)
 
     def _is(self, *identity):
@@ -96,7 +123,9 @@ class Diablo():
         for ident in identity:
             if ident in self.graph.nodes():
                 active_nodes.append(ident)
-        newd = Diablo(self.graph, ident)
+        newd = Diablo(self.graph, active_nodes)
+        newd.nodes_cache = self.nodes_cache
+        newd.edges_cache = self.edges_cache
         return newd
 
     def nodes(self, data=False):
