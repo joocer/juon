@@ -51,9 +51,7 @@ class Diablo(object):
         """
         self.edges_cache = {}
         for x,y,e in self.graph.edges(data=True):
-            cache = self.edges_cache.get(e.get('relationship'))
-            if not cache:
-                cache = []
+            cache = self.edges_cache.get(e.get('relationship'), [])
             cache.append((x,y))
             self.edges_cache[e.get('relationship')] = cache     
 
@@ -66,7 +64,7 @@ class Diablo(object):
         Get the nodes which are referenced by the cursor
         """
         if not self.cached_nodes:
-            self.cached_nodes = {(x,y) for x,y in self.graph.nodes(data=True) if x in self.active_nodes}
+            self.cached_nodes = {x:y for x,y in self.nodes_cache if x in self.active_nodes}
         return self.cached_nodes
 
 
@@ -118,7 +116,7 @@ class Diablo(object):
 
         returns a list of values
         """
-        return list({y.get(key) for x,y in self.__get_cached_nodes()})
+        return list({y.get(key) for x,y in self.__get_cached_nodes().items()})
 
 
     def groupCount(self, key):
@@ -131,7 +129,7 @@ class Diablo(object):
         returns: a dictionary of counts
         """
         from collections import Counter
-        nodes = Counter([y.get(key) for x,y in self.__get_cached_nodes()])
+        nodes = Counter([y.get(key) for x,y in self.__get_cached_nodes().items()])
         return dict(nodes)
 
 
@@ -159,8 +157,8 @@ class Diablo(object):
         Returns the currently selected nodes
         """
         if data:
-            return self.__get_cached_nodes()
-        return {x for x in self.graph.nodes() if x in self.active_nodes}
+            return [y for x,y in self.__get_cached_nodes().items()]
+        return self.active_nodes
 
 
     def edges(self, data=False):

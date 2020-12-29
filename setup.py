@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="diablo",
-    version="0.0.2",
+    version="0.0.3",
     description="NetworkX Query Language",
     long_description=long_description,
     long_description_content_type="text/markdown",
