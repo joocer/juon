@@ -1,5 +1,3 @@
-import xmltodict
-
 class Graph(object):
 
     __slots__ = ('_nodes', '_edges')
@@ -14,6 +12,8 @@ class Graph(object):
         return [obj]
 
     def load_graphml(self, xml_file):
+        import xmltodict
+
         # load the file into a dom
         with open(xml_file, 'r') as fd:
             xml_dom = xmltodict.parse(fd.read())
@@ -40,7 +40,6 @@ class Graph(object):
             relationship.append((source, target))
             self._edges[edge['data'].get('#text')] = relationship
 
-
     def load(self, json_file):
         import ujson as json
         reader = inner_file_reader(json_file)
@@ -53,39 +52,54 @@ class Graph(object):
                 relationship.append((record['source'], record['target']))
                 self._edges[record['relationship']] = relationship
 
-
     def save(self, json_file):
         import ujson as json
         with open(json_file, 'w') as json_file:
             for node_id, attribs in self.nodes(data=True):
-                record = {'type':'node','id':node_id,'attributes':attribs}
+                record = {
+                        'type': 'node',
+                        'id': node_id,
+                        'attributes': attribs
+                    }
                 json_file.write(json.dumps(record) + '\n')
             for relationship, edges in self._edges.items():
                 for source, target in edges:
-                    record = {'type':'edge','source':source,'target':target,'relationship':relationship}
-                    json_file.write(json.dumps(record) + '\n')      
-
+                    record = {
+                            'type': 'edge',
+                            'source': source,
+                            'target': target,
+                            'relationship': relationship
+                        }
+                    json_file.write(json.dumps(record) + '\n')
 
     def add_edge(self, source, target, relationship):
         # add the edge to the doc, if the node doesn't exist create it
         rel = self._edges.get(relationship, [])
         rel.append((source, target))
         self._edges[relationship] = rel
-        if source not in self._nodes:
-            self._nodes[source] = {}
-        if target not in self._nodes:
-            self._nodes[target] = {}
 
+    def remove_edge(self, source, target):
+        edge = (source, target)
+        for rel in self._edges:
+            if edge in self._edges[rel]:
+                self._edges[rel].remove(edge)
+                return True
+        return False
 
     def add_node(self, node_id, **kwargs):
         self._nodes[node_id] = kwargs
 
+    def remove_node(self, node_id):
+        try:
+            del self._nodes[node_id]
+            return True
+        except:
+            return False
 
     def nodes(self, data=False):
         if data:
             return [(ids, details) for ids, details in self._nodes.items()]
         return [ids for ids, details in self._nodes.items()]
-
 
     def edges(self):
         result = []
@@ -93,6 +107,31 @@ class Graph(object):
             result += self._edges[rel]
         return result
 
+    def copy(self):
+        new_graph = Graph()
+        new_graph._edges = self._edges.copy()
+        new_graph._nodes = self._nodes.copy()
+        return new_graph
+
+    def walk_tree(
+            self,
+            source: str,
+            depth: int = 5):
+        sources = set([source])
+        loops = 0
+
+        visited_edges = []
+        while loops <= depth:
+            cycle_visited_edges = []
+            for rel in self._edges:
+                cycle_visited_edges += [(s, t, rel) for (s, t) in self._edges[rel] if s in sources]
+            sources = {t for (s, t, r) in visited_edges}
+            visited_edges += cycle_visited_edges
+            loops += 1
+
+        # select the nodes associated with the edges
+        # return a graph
+        return visited_edges
 
 def inner_file_reader(
         file_name: str,
@@ -127,8 +166,14 @@ if __name__ == "__main__":
 
 #    g.load('test2.jsonl')
 
-#    pprint(g.nodes())
-#    pprint(g.edges())
+    #g.remove_edge('ASVS-14.5.4', 'CWE-306')
+    #g.remove_node('ASVS-14.5.4')
+
+    s = g.walk_tree('ASVS-14.5.4', 2)
+    print(s)
+
+    #pprint(g.nodes())
+    #pprint(g.edges())
 
 #    print(type(g._nodes['a']))
 
