@@ -1,4 +1,7 @@
 import xmltodict
+from .index import BPlusTree
+
+BTREE_ORDER = 16
 
 class Graph(object):
 
@@ -8,7 +11,7 @@ class Graph(object):
 
     def __init__(self):
         self._nodes = {}
-        self._edges = {}
+        self._edges = BPlusTree(BTREE_ORDER)
 
 
     def _make_a_list(self, obj):
@@ -35,7 +38,8 @@ class Graph(object):
                 data[keys[key['@key']]] = key['#text']
             self._nodes[node.get('@id')] = data
 
-        # load the keys
+        # load the edges
+        self._edges = BPlusTree(BTREE_ORDER)
         index = -1
         for index, edge in enumerate(xml_dom['graphml']['graph'].get('edge', {})):
             data = {}
@@ -43,38 +47,42 @@ class Graph(object):
             target = edge['@target']
             for key in self._make_a_list(edge.get('data', {})):
                 data[keys[key['@key']]] = key['#text']
-            self._edges[(source, target)] = data
+            self._edges.insert(source, (target, data))
 
 
-    def load(self, json_file):
+#    def load(self, json_file):
+#        import ujson as json
+#        reader = inner_file_reader(json_file)
+#        for row in reader:
+#            record = json.loads(row)
+#            if record['type'] == 'node':
+#                self._nodes[record['id']] = record['attributes']
+#            if record['type'] == 'edge':
+#                self._edges[(record['source'], record['target'])] = record['attributes']
+
+
+    def save(self, graph_path):
         import ujson as json
-        reader = inner_file_reader(json_file)
-        for row in reader:
-            record = json.loads(row)
-            if record['type'] == 'node':
-                self._nodes[record['id']] = record['attributes']
-            if record['type'] == 'edge':
-                self._edges[(record['source'], record['target'])] = record['attributes']
+
+        node_types = {}
+        for node_id, attribs in self.nodes(data=True):
+            node_types[attribs.get('node_type')] = 1
+
+        for node_type in node_types:
+            with open(graph_path + F'/node-{node_type}.jsonl', 'w') as json_file:
+                for node_id, attribs in self.nodes(data=True):
+                    if attribs.get('node_type') == node_type:
+                        record = {'id':node_id,'attributes':attribs}
+                        json_file.write(json.dumps(record) + '\n')
 
 
-    def save(self, json_file):
-        import ujson as json
-        with open(json_file, 'w') as json_file:
-            for node_id, attribs in self.nodes(data=True):
-                record = {'type':'node','id':node_id,'attributes':attribs}
-                json_file.write(json.dumps(record) + '\n')
-            for source, target, attribs in self.edges(data=True):
-                record = {'type':'edge','source':source,'target':target,'attributes':attribs}
-                json_file.write(json.dumps(record) + '\n')      
+
+        
 
 
     def add_edge(self, source, target, **kwargs):
-        # add the edge to the doc, if the node doesn't exist create it
-        self._edges[(source, target)] = kwargs
-        if source not in self._nodes:
-            self._nodes[source] = {}
-        if target not in self._nodes:
-            self._nodes[target] = {}
+        # add the edge to the grapg
+        self._edges.insert(source, (target, kwargs))
 
 
     def add_node(self, node_id, **kwargs):
@@ -83,14 +91,14 @@ class Graph(object):
 
     def nodes(self, data=False):
         if data:
-            return [(ids, details) for ids, details in self._nodes.items()]
-        return [ids for ids, details in self._nodes.items()]
-
+            return self._nodes.items()
+        return list(self._nodes.keys())
 
     def edges(self, data=False):
-        if data:
-            return [(ids[0], ids[1], details) for ids, details in self._edges.items()]
-        return [ids for ids, details in self._edges.items()]
+        yield from self._edges.items(data=data)
+
+    def out_going_edges(self, source):
+        return self._edges.retrieve(source)
 
 
 def inner_file_reader(
@@ -114,6 +122,34 @@ def inner_file_reader(
         if carry_forward:
             yield carry_forward
 
+
+
+
+def get_size(obj, seen=None):
+    import sys
+    """Recursively finds size of objects"""
+    size = sys.getsizeof(obj)
+    if seen is None:
+        seen = set()
+    obj_id = id(obj)
+    if obj_id in seen:
+        return 0
+    # Important mark as seen *before* entering recursion to gracefully handle
+    # self-referential objects
+    seen.add(obj_id)
+    if isinstance(obj, dict):
+        size += sum([get_size(v, seen) for v in obj.values()])
+        size += sum([get_size(k, seen) for k in obj.keys()])
+    elif hasattr(obj, '__dict__'):
+        size += get_size(obj.__dict__, seen)
+    elif hasattr(obj, '__slots__'):
+        size += sum([get_size(getattr(obj, k), seen) for k in obj.__slots__])
+    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+        size += sum([get_size(i, seen) for i in obj])
+    return size
+
+
+
 if __name__ == "__main__":
 
     from pprint import pprint
@@ -124,11 +160,31 @@ if __name__ == "__main__":
     #g.add_node('a', variable=789)
 #    load_graph_ml(r'graph/mitre-data.graphml')
 
-    g.load('test.jsonl')
+    g.load_graphml('graph/mitre-data.graphml')
+
+    for nid, node in g.nodes(data=True):
+        node['node_type'] = node.get('kind')
+        del node['kind']
+
+    import time
+
+    s = time.time_ns()
+    for i in range(1000):
+        out_going = g.out_going_edges('CWE-15')
+    print((time.time_ns() - s) / 1e9, out_going)
+
+    
+
+    n = time.time_ns()
+    for i in range(1000):
+        out_going = [t for s,t in g.edges(data=True) if s == 'CWE-15']
+    print((time.time_ns() - n) / 1e9, out_going)
 
     #pprint(g._nodes)
     #pprint(g._edges)
 
-    print(type(g._nodes['a']))
+    #print(g._nodes)
 
-    #g.save('test.jsonl')
+    #g.save('graph/mitre')
+
+    #g.edge_index.show()
