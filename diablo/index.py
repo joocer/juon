@@ -1,6 +1,4 @@
-"""Simple implementation of a B+ tree, a self-balancing tree data structure that (1) maintains sort
-data order and (2) allows insertions and access in logarithmic time.
-"""
+
 
 
 class Node(object):
@@ -13,84 +11,88 @@ class Node(object):
         order (int): The maximum number of keys each node can hold.
     """
 
-    __slots__ = ('order', 'keys', 'values', 'leaf')
+    __slots__ = ('_order', '_keys', '_values', '_leaf')
 
     def __init__(self, order):
         """Child nodes can be converted into parent nodes by setting self.leaf = False. Parent nodes
         simply act as a medium to traverse the tree."""
-        self.order = order
-        self.keys = []
-        self.values = []
-        self.leaf = True
+        self._order = order
+        self._keys = []
+        self._values = []
+        self._leaf = True
 
     def add(self, key, value):
         """Adds a key-value pair to the node."""
         # If the node is empty, simply insert the key-value pair.
-        if not self.keys:
-            self.keys.append(key)
-            self.values.append([value])
+        if not self._keys:
+            self._keys.append(key)
+            self._values.append([value])
             return None
 
-        for i, item in enumerate(self.keys):
+        for i, item in enumerate(self._keys):
             # If new key matches existing key, add to list of values.
             if key == item:
-                self.values[i].append(value)
+                if value not in self._values[i]:
+                    self._values[i].append(value)
                 break
 
             # If new key is smaller than existing key, insert new key to the left of existing key.
             elif key < item:
-                self.keys = self.keys[:i] + [key] + self.keys[i:]
-                self.values = self.values[:i] + [[value]] + self.values[i:]
+                self._keys = self._keys[:i] + [key] + self._keys[i:]
+                self._values = self._values[:i] + [[value]] + self._values[i:]
                 break
 
             # If new key is larger than all existing keys, insert new key to the right of all
             # existing keys.
-            elif i + 1 == len(self.keys):
-                self.keys.append(key)
-                self.values.append([value])
+            elif i + 1 == len(self._keys):
+                self._keys.append(key)
+                self._values.append([value])
 
     def split(self):
         """Splits the node into two and stores them as child nodes."""
-        left = Node(self.order)
-        right = Node(self.order)
-        mid = self.order // 2
+        left = Node(self._order)
+        right = Node(self._order)
+        mid = self._order // 2
 
-        left.keys = self.keys[:mid]
-        left.values = self.values[:mid]
+        left._keys = self._keys[:mid]
+        left._values = self._values[:mid]
 
-        right.keys = self.keys[mid:]
-        right.values = self.values[mid:]
+        right._keys = self._keys[mid:]
+        right._values = self._values[mid:]
 
         # When the node is split, set the parent key to the left-most key of the right child node.
-        self.keys = [right.keys[0]]
-        self.values = [left, right]
-        self.leaf = False
+        self._keys = [right._keys[0]]
+        self._values = [left, right]
+        self._leaf = False
 
     def is_full(self):
         """Returns True if the node is full."""
-        return len(self.keys) == self.order
+        return len(self._keys) == self._order
 
     def show(self, counter=0):
         """Prints the keys at each level."""
-        print(counter, str(self.keys))
+        print(counter, str(self._keys))
 
         # Recursively print the key of child nodes (if these exist).
-        if not self.leaf:
-            for item in self.values:
+        if not self._leaf:
+            for item in self._values:
                 item.show(counter + 1)
 
-    def items(self, data=False):
-        if data:
-            for key, values in zip(self.keys, self.values):
-                if type(values).__name__ == "Node":
-                    yield from values.items(data=data)
-                else:
-                    yield from [(key, value) for value in values]
-        else:
-            yield from self.keys
-        if not self.leaf:
-            for item in self.values:
-                yield from item.items(data=data)
+    def items(self):
+        for key, values in zip(self._keys, self._values):
+            if type(values).__name__ == "Node":
+                yield from values.items()
+            else:
+                yield from [(key, value) for value in values]
+        if not self._leaf:
+            for item in self._values:
+                yield from item.items()
+
+    def keys(self):
+        yield from self._keys
+        if not self._leaf:
+            for item in self._values:
+                yield from item.keys()
 
 
 class BPlusTree(object):
@@ -108,28 +110,28 @@ class BPlusTree(object):
     def _find(self, node, key):
         """ For a given node and key, returns the index where the key should be inserted and the
         list of values at that index."""
-        for i, item in enumerate(node.keys):
+        for i, item in enumerate(node._keys):
             if key < item:
-                return node.values[i], i
+                return node._values[i], i
 
-        return node.values[i + 1], i + 1
+        return node._values[i + 1], i + 1
 
     def _merge(self, parent, child, index):
         """For a parent and child node, extract a pivot from the child to be inserted into the keys
         of the parent. Insert the values from the child into the values of the parent.
         """
-        parent.values.pop(index)
-        pivot = child.keys[0]
+        parent._values.pop(index)
+        pivot = child._keys[0]
 
-        for i, item in enumerate(parent.keys):
+        for i, item in enumerate(parent._keys):
             if pivot < item:
-                parent.keys = parent.keys[:i] + [pivot] + parent.keys[i:]
-                parent.values = parent.values[:i] + child.values + parent.values[i:]
+                parent._keys = parent._keys[:i] + [pivot] + parent._keys[i:]
+                parent._values = parent._values[:i] + child._values + parent._values[i:]
                 break
 
-            elif i + 1 == len(parent.keys):
-                parent.keys += [pivot]
-                parent.values += child.values
+            elif i + 1 == len(parent._keys):
+                parent._keys += [pivot]
+                parent._values += child._values
                 break
 
     def insert(self, key, value):
@@ -140,7 +142,7 @@ class BPlusTree(object):
         child = self.root
 
         # Traverse tree until leaf node is reached.
-        while not child.leaf:
+        while not child._leaf:
             parent = child
             child, index = self._find(child, key)
 
@@ -159,12 +161,12 @@ class BPlusTree(object):
         """Returns a value for a given key, and None if the key does not exist."""
         child = self.root
 
-        while not child.leaf:
+        while not child._leaf:
             child, index = self._find(child, key)
 
-        for i, item in enumerate(child.keys):
+        for i, item in enumerate(child._keys):
             if key == item:
-                return child.values[i]
+                return child._values[i]
 
         return None
 
@@ -172,136 +174,21 @@ class BPlusTree(object):
         """Prints the keys at each level."""
         self.root.show()
 
-    def items(self, data=False):
-        yield from self.root.items(data=data)
+    def keys(self):
+        yield from self.root.keys()
 
-def demo_node():
-    print('Initializing node...')
-    node = Node(order=4)
+    def items(self):
+        yield from self.root.items()
 
-    print('\nInserting key a...')
-    node.add('a', 'alpha')
-    print('Is node full?', node.is_full())
-    node.show()
+    def save(self, filename):
+        import ujson as json
+        with open(filename, mode='w') as file:
+            for key, attributes in self.items():
+                file.write(json.dumps({"key":key, "value": attributes}) + '\n')
 
-    print('\nInserting keys b, c, d...')
-    node.add('b', 'bravo')
-    node.add('c', 'charlie')
-    node.add('d', 'delta')
-    print('Is node full?', node.is_full())
-    node.show()
-
-    print('\nSplitting node...')
-    node.split()
-    node.show()
-
-def demo_bplustree():
-    print('Initializing B+ tree...')
-    bplustree = BPlusTree(order=4)
-
-    print('\nB+ tree with 1 item...')
-    bplustree.insert('a', 'alpha')
-    bplustree.show()
-
-    print('\nB+ tree with 2 items...')
-    bplustree.insert('b', 'bravo')
-    bplustree.show()
-
-    print('\nB+ tree with 3 items...')
-    bplustree.insert('c', 'charlie')
-    bplustree.show()
-
-    print('\nB+ tree with 4 items...')
-    bplustree.insert('d', 'delta')
-    bplustree.show()
-
-    print('\nB+ tree with 5 items...')
-    bplustree.insert('e', 'echo')
-    bplustree.show()
-
-    print('\nB+ tree with 6 items...')
-    bplustree.insert('f', 'foxtrot')
-    bplustree.show()
-
-    print('\nRetrieving values with key e...')
-    print(bplustree.retrieve('e'))
-
-    bplustree.show()
-
-import time
-
-def sixty_five():
-
-    s = time.time_ns()
-
-    bplustree = BPlusTree(order=16)
-
-    for i in range(1024*32):
-        key = "{0:0{1}x}".format(i,4)
-        bplustree.insert(key, 'k1' + key)
-
-    for i in range(1024*32):
-        key = "{0:0{1}x}".format(i,4)
-        bplustree.insert(key, 'k2' + key)
-
-    t = F'time {(time.time_ns() - s) / 1e9}'
-
-    #bplustree.show()
-
-    print(t)
-
-
-    s = time.time_ns()
-    print(bplustree.retrieve('0073'), (time.time_ns() - s) / 1e9)
-
-
-def sf():
-
-    s = time.time_ns()
-
-    d = {}
-    for i in range(1024*32):
-        key = "{0:0{1}x}".format(i,4)
-        v = d.get(key,[])
-        v.append(key)
-        d[key] = v
-
-    for i in range(1024*32):
-        key = "{0:0{1}x}".format(i,4)
-        v = d.get(key,[])
-        v.append(key)
-        d[key] = v
-
-    t = F'time {(time.time_ns() - s) / 1e9}'
-    print(t)
-
-    s = time.time_ns()
-    print(d.get('0073'), (time.time_ns() - s) / 1e9)
-
-
-def saf():
-
-    bplustree = BPlusTree(order=16)
-
-    words = [
-        'Serendipity',
-        'Petrichor',
-        'Supine',
-        'Solitude',
-        'Aurora',
-        'Idyllic',
-        'Clinomania',
-        'Pluviophile',
-        'Euphoria',
-        'Sequoia'
-    ]
-
-    for word in words:
-        bplustree.insert(word[:1], word)
-
-    print(list(bplustree.items()))
-    print(list(bplustree.items(data=True)))
-
-
-if __name__ == '__main__':
-    saf()
+    def load(self, filename):
+        import ujson as json
+        with open(filename, mode='r') as file:
+            for text_line in file:
+                record = json.loads(text_line)
+                self.insert(record['key'], record['value'])
