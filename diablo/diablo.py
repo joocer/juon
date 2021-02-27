@@ -46,6 +46,7 @@ class Diablo(object):
             # select everything from the base graph
             self.active_nodes = set(graph.nodes())
 
+
     def V(self, *nodes):
         """
         Initialize Diablo against a graph.
@@ -64,8 +65,9 @@ class Diablo(object):
 
         returns: new Diablo instance
         """
-        active_nodes = [x for x,y in self.graph.nodes(data=True) if y.get(key) == value]
+        active_nodes = [x for x,y in self.graph.nodes(data=True) if key in y and y[key] == value]
         return Diablo(self.graph, active_nodes)
+
 
     def out(self, *relationship):
         """
@@ -80,7 +82,7 @@ class Diablo(object):
         active_nodes = []
 
         for node in self.active_nodes:
-            active_nodes += [target for target, attribs in self.graph.out_going_edges(node) or [] if attribs['relationship'] in relationship]
+            active_nodes += [target for target, attribs in self.graph.out_going_edges(node) if attribs['relationship'] in relationship]
 
         return Diablo(self.graph, active_nodes)
 
@@ -95,6 +97,7 @@ class Diablo(object):
         returns a list of values
         """
         return list({y.get(key) for x,y in self.graph.nodes(data=True) if x in self.active_nodes})
+
 
     def groupCount(self, key):
         """
@@ -128,7 +131,8 @@ class Diablo(object):
         Returns the currently selected nodes
         """
         if data:
-            return [y for x,y in self._get_cached_active_nodes().items()]
+            nodes = self.graph.nodes(data=True)
+            return [nodes[x] for x in self.active_nodes]
         return self.active_nodes
 
     def edges(self, data=False):

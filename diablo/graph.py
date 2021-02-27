@@ -5,9 +5,7 @@ BTREE_ORDER = 16
 
 class Graph(object):
 
-
     __slots__ = ('_nodes', '_edges')
-
 
     def __init__(self):
         self._nodes = {}
@@ -34,9 +32,14 @@ class Graph(object):
         index = -1
         for index, node in enumerate(xml_dom['graphml']['graph'].get('node', {})):
             data = {}
+            skip = False
             for key in self._make_a_list(node.get('data', {})):
-                data[keys[key['@key']]] = key['#text']
-            self._nodes[node.get('@id')] = data
+                try:
+                    data[keys[key['@key']]] = key.get('#text', '')
+                except:
+                    skip = True
+            if not skip:
+                self._nodes[node.get('@id')] = data
 
         # load the edges
         self._edges = BPlusTree(BTREE_ORDER)
@@ -98,7 +101,26 @@ class Graph(object):
         yield from self._edges.items(data=data)
 
     def out_going_edges(self, source):
-        return self._edges.retrieve(source)
+        return self._edges.retrieve(source) or []
+
+    def bfs(self, node, depth):
+        if depth == 0:
+            return []
+
+        edges = self.out_going_edges(node)
+        result = [node]
+        if edges:
+            for walked_edge in edges:
+                result.append(walked_edge[0])
+                result += self.bfs(walked_edge[0], depth - 1)
+
+        return list(set(result))
+
+    def copy(self):
+        g = Graph()
+        g._nodes = self._nodes.copy()
+        g._edges = self._edges
+        return g
 
 
 def inner_file_reader(
