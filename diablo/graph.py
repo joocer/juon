@@ -7,6 +7,11 @@ Simplified graph data structure, only suitable for directed graphs.
 The structure is optimized for 
 Traversing the graph is 
 Getting the details of a specific node is fast
+
+This is not a complete replacement for NetworkX, it is designed and
+optimized for few use cases.
+
+If you want to do more, translate to NetworkX.
 """
 
 from .index import BPlusTree
@@ -29,7 +34,7 @@ class Graph(object):
         return [obj]
 
 
-    def load_graphml(self, xml_file):
+    def read_graphml(self, xml_file):
         import xmltodict
         # load the file into a dom
         with open(xml_file, 'r') as fd:
@@ -159,6 +164,21 @@ class Graph(object):
         g._edges = self._edges.copy()
         return g
 
+
+    def to_networkx(self):
+        import networkx as nx
+        raise NotImplementedError()
+
+    def subgraph(self, node_list):
+        # create a graph based on the nodes we have been given
+        new_graph = Graph()
+        for node in node_list:
+            edges = self._edges[node]
+            for target, **attrib in edges:
+                if target in node_list:
+                    new_graph.add_edge(node, target, **attrib)
+            new_graph.add_node(node, self._nodes[node])
+        return new_graph
 
 def inner_file_reader(
         file_name: str,
