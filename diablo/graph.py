@@ -1,4 +1,14 @@
-import xmltodict
+"""
+Simplified graph data structure, only suitable for directed graphs.
+
+- Edges are stored in a dictionary, the key is the source node
+- Nodes are stored in a B+Tree
+
+The structure is optimized for 
+Traversing the graph is 
+Getting the details of a specific node is fast
+"""
+
 from .index import BPlusTree
 
 BTREE_ORDER = 16
@@ -9,16 +19,18 @@ class Graph(object):
 
     def __init__(self):
         self._nodes = {}
-        self._edges = BPlusTree(BTREE_ORDER)
+        self._edges = {}
 
 
     def _make_a_list(self, obj):
+        """ internal helper method """
         if isinstance(obj, list):
             return obj
         return [obj]
 
 
     def load_graphml(self, xml_file):
+        import xmltodict
         # load the file into a dom
         with open(xml_file, 'r') as fd:
             xml_dom = xmltodict.parse(fd.read())
@@ -28,9 +40,9 @@ class Graph(object):
         for key in xml_dom['graphml'].get('key', {}):
             keys[key['@id']] = key['@attr.name']
 
+        self._nodes = BPlusTree(BTREE_ORDER)
         # load the nodes
-        index = -1
-        for index, node in enumerate(xml_dom['graphml']['graph'].get('node', {})):
+        for node in xml_dom['graphml']['graph'].get('node', {}):
             data = {}
             skip = False
             for key in self._make_a_list(node.get('data', {})):
@@ -39,19 +51,18 @@ class Graph(object):
                 except:
                     skip = True
             if not skip:
-                self._nodes[node.get('@id')] = data
+                self._nodes.insert(node['@id'], data)
 
-        # load the edges
-        self._edges = BPlusTree(BTREE_ORDER)
-        index = -1
-        for index, edge in enumerate(xml_dom['graphml']['graph'].get('edge', {})):
+        self._edges = {}
+        for edge in xml_dom['graphml']['graph'].get('edge', {}):
             data = {}
             source = edge['@source']
             target = edge['@target']
             for key in self._make_a_list(edge.get('data', {})):
                 data[keys[key['@key']]] = key['#text']
-            self._edges.insert(source, (target, data))
-
+            if source not in self._edges:
+                self._edges[source] = []
+            self._edges[source].append((target, data))
 
 #    def load(self, json_file):
 #        import ujson as json
@@ -63,63 +74,89 @@ class Graph(object):
 #            if record['type'] == 'edge':
 #                self._edges[(record['source'], record['target'])] = record['attributes']
 
-
     def save(self, graph_path):
         import ujson as json
 
-        node_types = {}
-        for node_id, attribs in self.nodes(data=True):
-            node_types[attribs.get('node_type')] = 1
-
-        for node_type in node_types:
-            with open(graph_path + F'/node-{node_type}.jsonl', 'w') as json_file:
-                for node_id, attribs in self.nodes(data=True):
-                    if attribs.get('node_type') == node_type:
-                        record = {'id':node_id,'attributes':attribs}
-                        json_file.write(json.dumps(record) + '\n')
-
-
-
+        self._edges.save(graph_path + '/edges.index')
+        self._nodes.save(graph_path + '/nodes.index')
         
-
-
     def add_edge(self, source, target, **kwargs):
         # add the edge to the grapg
         self._edges.insert(source, (target, kwargs))
 
-
     def add_node(self, node_id, **kwargs):
         self._nodes[node_id] = kwargs
-
 
     def nodes(self, data=False):
         if data:
             return self._nodes.items()
-        return list(self._nodes.keys())
+        return self._nodes.keys()
 
-    def edges(self, data=False):
-        yield from self._edges.items(data=data)
+    def edges(self):
+        return self._edges.items()
 
-    def out_going_edges(self, source):
-        return self._edges.retrieve(source) or []
+    def breadth_first_search(
+            self,
+            source):
+        """
+        Search a tree for nodes we can walk to from a given node. This uses a 
+        variation of the algorith used by NetworkX optimized for the Diablo
+        data structures.
+        
+        https://networkx.org/documentation/networkx-1.10/_modules/networkx/algorithms/traversal/breadth_first_search.html#bfs_tree
+        
+        Parameters:
+            source: string
+                The node to walk from
+        """
+        from collections import deque
+        
+        visited = set([source])
+        queue = deque([(source, self.outgoing_edges(source))])
+        
+        while queue:
+            parent, children = queue[0]
+            try:
+                child = children.pop()
+                if child not in visited:
+                    yield parent, child
+                    visited.add(child)
+                    queue.append((child, self.outgoing_edges(child)))
+            except KeyError:
+                queue.popleft()
 
-    def bfs(self, node, depth):
-        if depth == 0:
-            return []
+    def outgoing_edges(
+            self,
+            source):
+        targets = self._edges.get(source) or {}
+        return {a for a,b in targets}
 
-        edges = self.out_going_edges(node)
-        result = [node]
-        if edges:
-            for walked_edge in edges:
-                result.append(walked_edge[0])
-                result += self.bfs(walked_edge[0], depth - 1)
+    def descendants_at_distance(
+            self,
+            source,
+            distance):
 
-        return list(set(result))
+        current_distance = 0
+        queue = {source}
+        visited = {source}
+
+        while queue:
+            if current_distance == distance:
+                return queue
+            current_distance += 1
+            next_vertices = set()
+            for vertex in queue:
+                for child in self.outgoing_edges(vertex):
+                    if child not in visited:
+                        visited.add(child)
+                        next_vertices.add(child)
+            queue = next_vertices
+        return set()
 
     def copy(self):
         g = Graph()
         g._nodes = self._nodes.copy()
-        g._edges = self._edges
+        g._edges = self._edges.copy()
         return g
 
 
@@ -169,44 +206,3 @@ def get_size(obj, seen=None):
     elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
         size += sum([get_size(i, seen) for i in obj])
     return size
-
-
-
-if __name__ == "__main__":
-
-    from pprint import pprint
-
-    g = Graph()
-    #g.add_node('abc', variable=123)
-    #g.add_edge('a', 'b', variable=456)
-    #g.add_node('a', variable=789)
-#    load_graph_ml(r'graph/mitre-data.graphml')
-
-    g.load_graphml('graph/mitre-data.graphml')
-
-    for nid, node in g.nodes(data=True):
-        node['node_type'] = node.get('kind')
-        del node['kind']
-
-    import time
-
-    s = time.time_ns()
-    for i in range(1000):
-        out_going = g.out_going_edges('CWE-15')
-    print((time.time_ns() - s) / 1e9, out_going)
-
-    
-
-    n = time.time_ns()
-    for i in range(1000):
-        out_going = [t for s,t in g.edges(data=True) if s == 'CWE-15']
-    print((time.time_ns() - n) / 1e9, out_going)
-
-    #pprint(g._nodes)
-    #pprint(g._edges)
-
-    #print(g._nodes)
-
-    #g.save('graph/mitre')
-
-    #g.edge_index.show()

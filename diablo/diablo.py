@@ -43,9 +43,9 @@ class Diablo(object):
             else:
                 self.active_nodes = set(active_nodes)
         else:
+            #print('loading everything')
             # select everything from the base graph
             self.active_nodes = set(graph.nodes())
-
 
     def V(self, *nodes):
         """
@@ -53,7 +53,6 @@ class Diablo(object):
         """ 
         #self.nodes_cache = self.graph.nodes(data=True)
         return self._is(*nodes)
-
 
     def has(self, key: str, value: str):
         """
@@ -65,7 +64,9 @@ class Diablo(object):
 
         returns: new Diablo instance
         """
+        #print(F'has({key}, {value})')
         active_nodes = [x for x,y in self.graph.nodes(data=True) if key in y and y[key] == value]
+        #print(len(active_nodes))
         return Diablo(self.graph, active_nodes)
 
 
@@ -82,7 +83,7 @@ class Diablo(object):
         active_nodes = []
 
         for node in self.active_nodes:
-            active_nodes += [target for target, attribs in self.graph.out_going_edges(node) if attribs['relationship'] in relationship]
+            active_nodes += [target for target, attribs in self.graph.outgoing_edges(node) if attribs['relationship'] in relationship]
 
         return Diablo(self.graph, active_nodes)
 
@@ -98,6 +99,8 @@ class Diablo(object):
         """
         return list({y.get(key) for x,y in self.graph.nodes(data=True) if x in self.active_nodes})
 
+        #nodes = self.nodes()
+        #return {node.get(key) for node in nodes}
 
     def groupCount(self, key):
         """
@@ -122,8 +125,10 @@ class Diablo(object):
         Returns:
             A new Diablo instance
         """
-        identity_set = set(identity)
-        active_nodes = [ident for ident in self.graph.nodes() if ident in identity_set]
+        print('<<', identity)
+        print('**', list(self.graph.nodes()))
+        active_nodes = [ident for ident in self.graph.nodes() if ident in identity]
+        print('>>', active_nodes)
         return Diablo(self.graph, active_nodes)
 
     def nodes(self, data=False):
@@ -131,8 +136,11 @@ class Diablo(object):
         Returns the currently selected nodes
         """
         if data:
-            nodes = self.graph.nodes(data=True)
-            return [nodes[x] for x in self.active_nodes]
+            fetch = self.graph._nodes.retrieve
+            result = []
+            for item in [fetch(node) for node in self.active_nodes]:
+                result.append(item)
+            return result
         return self.active_nodes
 
     def edges(self, data=False):
@@ -145,4 +153,4 @@ class Diablo(object):
         return len(self.active_nodes)
 
     def __str__(self):
-        return F"Diablo with {len(self.active_nodes)} selected nodes"
+        return F"Graph with {len(self.active_nodes)} selected nodes"

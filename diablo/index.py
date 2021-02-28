@@ -80,16 +80,16 @@ class Node(object):
 
     def items(self):
         for key, values in zip(self._keys, self._values):
-            if type(values).__name__ == "Node":
-                yield from values.items()
-            else:
+            if isinstance(values, list):
                 yield from [(key, value) for value in values]
         if not self._leaf:
             for item in self._values:
                 yield from item.items()
 
     def keys(self):
-        yield from self._keys
+        for keys, values in zip(self._keys, self._values):
+            if isinstance(values, list):
+                yield from keys
         if not self._leaf:
             for item in self._values:
                 yield from item.keys()
@@ -189,6 +189,60 @@ class BPlusTree(object):
     def load(self, filename):
         import ujson as json
         with open(filename, mode='r') as file:
-            for text_line in file:
+            for i, text_line in enumerate(file):
                 record = json.loads(text_line)
                 self.insert(record['key'], record['value'])
+
+    def bulk_load(self, keys, values):
+        
+        batch_keys = []
+        batch_values = []
+        key = None
+
+        for i, value in enumerate(values):
+            if keys[i] == key:
+                print(batch_values, keys[i], key)
+                batch_values[len(batch_values) - 1].append(value)
+            else:
+                key = keys[i]
+                batch_keys.append(key)
+                batch_values.append([value])
+            
+                if len(batch_keys) == 2:
+                    print(i)
+                    print(batch_keys)
+                    print(batch_values)
+
+                    batch_keys = []
+                    batch_values = []
+                    
+
+
+
+
+if __name__ == "__main__":
+    b = BPlusTree(order=16)
+    words = [
+            'Serendipity',
+            'Petrichor',
+            'Supine',
+            'Solitude',
+            'Aurora',
+            'Idyllic',
+            'Clinomania',
+            'Pluviophile',
+            'Euphoria',
+            'Sequoia']
+
+    for word in words:
+        b.insert(word[:1], word)
+
+    k = [k for k,v in b.items()]
+    v = [v for k,v in b.items()]
+
+    print(k)
+    print(v)
+
+    print(list(b.keys()))
+
+    #bulk_load(None, k, v)
