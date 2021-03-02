@@ -3,7 +3,7 @@ from setuptools import setup, find_packages  # type:ignore
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-version = eval(open("diablo/version.py", "r").read())
+version = eval(open("diablo/version.py", "r").read())  # nosec
 
 setup(
     name="diablo",

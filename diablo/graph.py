@@ -54,51 +54,6 @@ class Graph(object):
         return [obj]
 
 
-    def read_graphml(self, xml_file):
-        import xmltodict
-        # load the file into a dom
-        with open(xml_file, 'r') as fd:
-            xml_dom = xmltodict.parse(fd.read())
-
-        # load the keys
-        keys = {}
-        for key in xml_dom['graphml'].get('key', {}):
-            keys[key['@id']] = key['@attr.name']
-
-        self._nodes = BPlusTree(BTREE_ORDER)
-        # load the nodes
-        for node in xml_dom['graphml']['graph'].get('node', {}):
-            data = {}
-            skip = False
-            for key in self._make_a_list(node.get('data', {})):
-                try:
-                    data[keys[key['@key']]] = key.get('#text', '')
-                except:
-                    skip = True
-            if not skip:
-                self._nodes.insert(node['@id'], data)
-
-        self._edges = {}
-        for edge in xml_dom['graphml']['graph'].get('edge', {}):
-            data = {}
-            source = edge['@source']
-            target = edge['@target']
-            for key in self._make_a_list(edge.get('data', {})):
-                data[keys[key['@key']]] = key['#text']
-            if source not in self._edges:
-                self._edges[source] = []
-            self._edges[source].append((target, data))
-
-#    def load(self, json_file):
-#        import ujson as json
-#        reader = inner_file_reader(json_file)
-#        for row in reader:
-#            record = json.loads(row)
-#            if record['type'] == 'node':
-#                self._nodes[record['id']] = record['attributes']
-#            if record['type'] == 'edge':
-#                self._edges[(record['source'], record['target'])] = record['attributes']
-
     def save(self, graph_path):
         import ujson as json
 
@@ -186,7 +141,7 @@ class Graph(object):
 
 
     def to_networkx(self):
-        import networkx as nx
+        import networkx as nx  # type:ignore
         raise NotImplementedError()
 
     def subgraph(self, node_list):

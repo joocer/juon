@@ -107,7 +107,7 @@ class Node(object):
     def __repr__(self):
         return F"Node ({str(self._keys)})"
 
-class BPlusTree(object):
+class Index(object):
     """B+ tree object, consisting of nodes.
 
     Nodes will automatically be split into two once it is full. When a split occurs, a key will
