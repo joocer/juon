@@ -1,10 +1,10 @@
-PARTS OF THIS LIBRARY ARE DERIVED FROM NETWORKX
+**PARTS OF THIS LIBRARY ARE DERIVED FROM NETWORKX**
 
-Copyright (C) 2004-2020, NetworkX Developers
-Aric Hagberg <hagberg@lanl.gov>
-Dan Schult <dschult@colgate.edu>
-Pieter Swart <swart@lanl.gov>
-All rights reserved.
+Copyright (C) 2004-2020, NetworkX Developers  
+Aric Hagberg <hagberg@lanl.gov>  
+Dan Schult <dschult@colgate.edu>  
+Pieter Swart <swart@lanl.gov>  
+All rights reserved.  
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-PARTS OF THIS LIBRARY ARE ADAPTED FROM
+**PARTS OF THIS LIBRARY ARE ADAPTED FROM**
 
 https://gist.github.com/savarin/69acd246302567395f65ad6b97ee503d
 
@@ -46,6 +46,6 @@ Ezzeri Esa (original author).
 
 
 
-DIABLO ICON IS FROM
+**DIABLO ICON IS FROM**
 
 https://gitlab.com/gillian.perard/gillicons
