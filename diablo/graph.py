@@ -174,12 +174,14 @@ class Graph(object):
         new_graph = Graph()
         for node in node_list:
             edges = self._edges[node]
-            for target, **attrib in edges:
+            for target, attrib in edges:
                 if target in node_list:
                     new_graph.add_edge(node, target, **attrib)
             new_graph.add_node(node, self._nodes[node])
         return new_graph
 
+
+ 
 def inner_file_reader(
         file_name: str,
         chunk_size: int = 64*1024*1024,

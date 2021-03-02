@@ -69,14 +69,15 @@ class Node(object):
         """Returns True if the node is full."""
         return len(self._keys) == self._order
 
-    def show(self, counter=0):
+    def show(self, counter=0, parent=None):
         """Prints the keys at each level."""
-        print(counter, str(self._keys))
-
+        if not parent:
+            parent = 'root'
+        print(counter, str(self._keys), str(self._values), self._leaf, parent)
         # Recursively print the key of child nodes (if these exist).
         if not self._leaf:
             for item in self._values:
-                item.show(counter + 1)
+                item.show(counter + 1, str(self._keys))
 
     def items(self):
         for key, values in zip(self._keys, self._values):
@@ -94,6 +95,8 @@ class Node(object):
             for item in self._values:
                 yield from item.keys()
 
+    def __repr__(self):
+        return F"Node ({str(self._keys)})"
 
 class BPlusTree(object):
     """B+ tree object, consisting of nodes.
@@ -186,35 +189,86 @@ class BPlusTree(object):
             for key, attributes in self.items():
                 file.write(json.dumps({"key":key, "value": attributes}) + '\n')
 
-    def load(self, filename):
+    @staticmethod
+    def load(filename, order=8):
         import ujson as json
+        keys = []
+        values = []
         with open(filename, mode='r') as file:
             for i, text_line in enumerate(file):
                 record = json.loads(text_line)
-                self.insert(record['key'], record['value'])
+                keys.append(record['key'])
+                values.append(record['value'])
+        return BPlusTree.bulk_load(keys, values, order)
 
-    def bulk_load(self, keys, values):
+    @staticmethod
+    def bulk_load(keys, values, order):
         
-        batch_keys = []
-        batch_values = []
-        key = None
+        def partition_data(keys, values, batch_size):
 
-        for i, value in enumerate(values):
-            if keys[i] == key:
-                print(batch_values, keys[i], key)
-                batch_values[len(batch_values) - 1].append(value)
-            else:
-                key = keys[i]
-                batch_keys.append(key)
-                batch_values.append([value])
+            if batch_size <= 1:
+                raise Exception('order size must be greater than 1')
+
+            batch_keys = []
+            batch_values = []
+            previous_key = None
+
+            for i, value in enumerate(values):
+                this_key = keys[i]
+
+                if this_key == previous_key:
+                    batch_values[len(batch_values) - 1].append(value)
+                elif len(batch_keys) == batch_size:
+                    yield batch_keys, batch_values
+                    batch_keys = [this_key]
+                    batch_values = [[value]]
+                else:
+                    batch_keys.append(this_key)
+                    batch_values.append([value])
+
+                previous_key = this_key
+            yield batch_keys, batch_values
+
+        def nodify_partitioned_data(keys, values, order):
+            root = Node(order)
+            for k,v in partition_data(keys, values, order):
+                node = Node(order)
+                node._order = order
+                node._keys = k
+                node._values = v
+                node._leaf = True
+                yield node
+        
+        def build_level(nodes, order):
+        
+            n = Node(order)
+            n._leaf = False
+            for node in nodes:
+                key = node._keys[len(node._keys) - 1] + 'X'
+                if len(n._values) < order:
+                    n._values.append(node)
+                    n._keys.append(key)
+                else:
+                    yield n
+                    n = Node(order)
+                    n._leaf = False
+                    n._values.append(node)
+                    n._keys.append(key)
+            if len(node._keys) > 0:
+                yield n
             
-                if len(batch_keys) == 2:
-                    print(i)
-                    print(batch_keys)
-                    print(batch_values)
+        nodes = nodify_partitioned_data(keys, values, order)
+        level = list(build_level(nodes, order))
+        while len(level) > 1:
+            level = list(build_level(level, order))
+            
+        b = BPlusTree(order)
+        b.root._leaf = False
+        b.root._values = level
+        b.root._keys = [n._keys[len(n._keys) - 1] + 'X' for i,n in enumerate(b.root._values)]
+        
+        return b
 
-                    batch_keys = []
-                    batch_values = []
                     
 
 
