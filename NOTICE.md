@@ -35,6 +35,17 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+
+PARTS OF THIS LIBRARY ARE ADAPTED FROM
+
+https://gist.github.com/savarin/69acd246302567395f65ad6b97ee503d
+
+No explicit license when accessed - not attested but reasonably
+assumed to be MIT Licence as appears to be the prefered licence by
+Ezzeri Esa (original author).
+
+
+
 DIABLO ICON IS FROM
 
 https://gitlab.com/gillian.perard/gillicons

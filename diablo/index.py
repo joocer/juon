@@ -1,4 +1,13 @@
+"""
+Adapted From:
+https://gist.github.com/savarin/69acd246302567395f65ad6b97ee503d
 
+No explicit license when accessed - not attested but reasonably assumed to be
+MIT Licence as appears to be the prefered licence by Ezzeri Esa (original 
+author).
+
+Accessed 2nd March 2020.
+"""
 
 
 class Node(object):
@@ -268,35 +277,3 @@ class BPlusTree(object):
         b.root._keys = [n._keys[len(n._keys) - 1] + 'X' for i,n in enumerate(b.root._values)]
         
         return b
-
-                    
-
-
-
-
-if __name__ == "__main__":
-    b = BPlusTree(order=16)
-    words = [
-            'Serendipity',
-            'Petrichor',
-            'Supine',
-            'Solitude',
-            'Aurora',
-            'Idyllic',
-            'Clinomania',
-            'Pluviophile',
-            'Euphoria',
-            'Sequoia']
-
-    for word in words:
-        b.insert(word[:1], word)
-
-    k = [k for k,v in b.items()]
-    v = [v for k,v in b.items()]
-
-    print(k)
-    print(v)
-
-    print(list(b.keys()))
-
-    #bulk_load(None, k, v)

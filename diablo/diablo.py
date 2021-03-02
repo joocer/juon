@@ -1,6 +1,5 @@
 """
-Diablo: Graph Query Language: Based on Gremlin
-https://tinkerpop.apache.org/gremlin.html
+Diablo: Python Graph Library
 
 (C) 2021 Justin Joyce.
 

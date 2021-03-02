@@ -1,4 +1,4 @@
-<img src="diablo.png">
+<img src="assets/diablo.png">
 
 # diablo
-Python Graph Implementation
+Python Graph Library
