@@ -99,7 +99,7 @@ class Node(object):
     def keys(self):
         for keys, values in zip(self._keys, self._values):
             if isinstance(values, list):
-                yield from keys
+                yield from [keys]
         if not self._leaf:
             for item in self._values:
                 yield from item.keys()
@@ -199,7 +199,7 @@ class Index(object):
                 file.write(json.dumps({"key":key, "value": attributes}) + '\n')
 
     @staticmethod
-    def load(filename, order=8):
+    def read_file(filename, order=8):
         import ujson as json
         keys = []
         values = []
@@ -208,7 +208,7 @@ class Index(object):
                 record = json.loads(text_line)
                 keys.append(record['key'])
                 values.append(record['value'])
-        return BPlusTree.bulk_load(keys, values, order)
+        return Index.bulk_load(keys, values, order)
 
     @staticmethod
     def bulk_load(keys, values, order):
@@ -271,7 +271,7 @@ class Index(object):
         while len(level) > 1:
             level = list(build_level(level, order))
             
-        b = BPlusTree(order)
+        b = Index(order)
         b.root._leaf = False
         b.root._values = level
         b.root._keys = [n._keys[len(n._keys) - 1] + 'X' for i,n in enumerate(b.root._values)]

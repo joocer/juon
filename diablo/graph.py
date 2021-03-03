@@ -34,7 +34,7 @@ optimized for few use cases.
 If you want to do more, translate to NetworkX.
 """
 
-from .index import BPlusTree
+from .index import Index
 
 BTREE_ORDER = 16
 
