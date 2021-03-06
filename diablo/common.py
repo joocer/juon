@@ -18,7 +18,8 @@ limitations under the License.
 import types
 from .graph import Graph
 from .diablo import Diablo
-from .index import Index
+from .index.btree import BTree
+from .errors import NodeNotFoundError
 try:
     import xmltodict  # type:ignore
 except ImportError:
@@ -47,6 +48,8 @@ def walk(graph, nids):
     nids = _make_a_list(nids)
     if len(nids) > 0:
         active_nodes = [nid for nid in graph.nodes() if nid in nids]
+        if len(active_nodes) == 0:
+            raise NodeNotFoundError("No matching nodes found")
         return Diablo(
             graph=graph,
             active_nodes=active_nodes)
@@ -71,7 +74,7 @@ def read_graphml(
     for key in xml_dom['graphml'].get('key', {}):
         keys[key['@id']] = key['@attr.name']
 
-    g._nodes = Index(BTREE_ORDER)
+    g._nodes = BTree(BTREE_ORDER)
     # load the nodes
     for node in xml_dom['graphml']['graph'].get('node', {}):
         data = {}
@@ -94,5 +97,19 @@ def read_graphml(
         if source not in g._edges:
             g._edges[source] = []
         g.add_edge(source, target, data.get('relationship'))
+
+    return g
+
+def load(path):
+
+    import ujson as json
+
+    g = Graph()
+    g._nodes = BTree.read_file(path + '/nodes.jsonl')
+
+    with open(path + '/edges.jsonl', 'r') as edge_file:
+        for line in edge_file:
+            edge = json.loads(line)
+            g.add_edge(edge['source'], edge['target'], edge['relationship'])
 
     return g

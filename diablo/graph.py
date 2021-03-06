@@ -16,7 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .index import Index
+from .index.btree import BTree
+
 
 BTREE_ORDER = 16
 
@@ -29,7 +30,7 @@ class Graph(object):
             graph = None):
 
         if graph is None:
-            self._nodes = Index(BTREE_ORDER)
+            self._nodes = BTree(BTREE_ORDER)
             self._edges = {}
         else:
             self._nodes = graph._nodes
@@ -45,10 +46,11 @@ class Graph(object):
 
     def save(self, graph_path):
         import ujson as json
-
-        self._edges.save(graph_path + '/edges.index')
-        raise Exception ("Edges aren't a BTree")
-        self._nodes.save(graph_path + '/nodes.index')
+        with open(graph_path + '/edges.jsonl', 'w') as edge_file:
+            for source, target, relationship in self.edges():
+                edge_record = {"source": source, "target": target, "relationship": relationship}
+                edge_file.write(json.dumps(edge_record) + '\n')
+        self._nodes.save(graph_path + '/nodes.jsonl')
 
         
     def add_edge(self, source, target, relationship):
@@ -175,11 +177,11 @@ class Graph(object):
             node1 = graph[s]
             node2 = graph[t]
             if node1 and node2:
-                g.add_edge(node1.get('kind'), node2.get('kind'), r)
+                g.add_edge(node1.get('node_type'), node2.get('node_type'), r)
             if node1:
-                g.add_node(node1.get('kind'), kind=node1.get('kind'))
+                g.add_node(node1.get('node_type'), node_type=node1.get('node_type'))
             if node2:
-                g.add_node(node2.get('kind'), kind=node2.get('kind'))
+                g.add_node(node2.get('node_type'), node_type=node2.get('node_type'))
         return g
 
 

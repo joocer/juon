@@ -2,12 +2,12 @@ import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from data_sets import words_10, albums_25, words_10_ordered
-from diablo import Index
+from diablo.index.btree import BTree
 
 def test_index_bulk_load():
 
     keys = [word[:1] for word in words_10_ordered]
-    index = Index.bulk_load(keys, words_10_ordered, order=2)
+    index = BTree.bulk_load(keys, words_10_ordered, order=2)
 
     k = [k for k,v in index.items()]
     v = [v for k,v in index.items()]

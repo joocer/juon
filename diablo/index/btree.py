@@ -123,7 +123,7 @@ class Node(object):
     def __repr__(self):
         return F"Node ({str(self._keys)})"
 
-class Index(object):
+class BTree(object):
     """B+ tree object, consisting of nodes.
 
     Nodes will automatically be split into two once it is full. When a split occurs, a key will
@@ -219,7 +219,7 @@ class Index(object):
     def copy(self):
         k = [k for k,v in self.items()]
         v = [v for k,v in self.items()]
-        return Index.bulk_load(k, v, self._order)
+        return BTree.bulk_load(k, v, self._order)
 
     @staticmethod
     def read_file(filename, order=8):
@@ -231,7 +231,7 @@ class Index(object):
                 record = json.loads(text_line)
                 keys.append(record['key'])
                 values.append(record['value'])
-        return Index.bulk_load(keys, values, order)
+        return BTree.bulk_load(keys, values, order)
 
     @staticmethod
     def bulk_load(keys, values, order):
@@ -294,7 +294,7 @@ class Index(object):
         while len(level) > 1:
             level = list(build_level(level, order))
             
-        b = Index(order)
+        b = BTree(order)
         b.root._leaf = False
         b.root._values = level
         b.root._keys = [n._keys[len(n._keys) - 1] + 'X' for i,n in enumerate(b.root._values)]

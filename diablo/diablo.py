@@ -79,7 +79,7 @@ class Diablo():
         Returns: 
             A new Graph instance
         """
-        active_nodes = [x for x,y in self.graph.nodes(data=True) if filter(y)]
+        active_nodes = [nid for nid, attrib in self.active_nodes(data=True) if filter(attrib)]
         return Diablo(
             graph=self.graph,
             active_nodes=active_nodes)
@@ -88,7 +88,7 @@ class Diablo():
     def active_nodes(self, data=False):
         if not data:
             return self._active_nodes
-        return [self.graph[node] for node in self._active_nodes]
+        return [(nid, self.graph[nid]) for nid in self._active_nodes]
 
 
     def list_relationships(self):
