@@ -34,7 +34,7 @@ def _make_a_list(obj):
     return [obj]
 
 
-def walk(graph, nids):
+def walk(graph, nids=None):
     """
     Begin a traversal by selecting the matching nodes.
 
@@ -45,14 +45,12 @@ def walk(graph, nids):
     Returns:
         A Diablo instance
     """
-    nids = _make_a_list(nids)
-    if len(nids) > 0:
-        active_nodes = [nid for nid in graph.nodes() if nid in nids]
-        if len(active_nodes) == 0:
-            raise NodeNotFoundError("No matching nodes found")
-        return Diablo(
-            graph=graph,
-            active_nodes=active_nodes)
+    if nids:
+        nids = _make_a_list(nids)
+        if len(nids) > 0:
+            return Diablo(
+                graph=graph,
+                active_nodes=nids)
     else:
         return Diablo(graph, set())
 

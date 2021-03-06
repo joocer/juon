@@ -70,7 +70,7 @@ class Diablo():
 
     def select(self, filter):
         """
-        Filters a graph by a function.
+        Filters the active nodes by a function.
 
         Parameters:
             filter: Callable
@@ -80,6 +80,16 @@ class Diablo():
             A new Graph instance
         """
         active_nodes = [nid for nid, attrib in self.active_nodes(data=True) if filter(attrib)]
+        return Diablo(
+            graph=self.graph,
+            active_nodes=active_nodes)
+
+
+    def has(self, key, value):
+        """
+        Filters the active nodes by a key/value match
+        """
+        active_nodes = [nid for nid, attrib in self.active_nodes(data=True) if attrib.get(key) == value]
         return Diablo(
             graph=self.graph,
             active_nodes=active_nodes)
