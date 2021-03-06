@@ -15,7 +15,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import types
 from .graph import Graph
+from .diablo import Diablo
 from .index import Index
 try:
     import xmltodict  # type:ignore
@@ -24,7 +26,35 @@ except ImportError:
 
 BTREE_ORDER = 16
 
-def load_graphml(
+def _make_a_list(obj):
+    """ internal helper method """
+    if isinstance(obj, (list, types.GeneratorType)):
+        return obj
+    return [obj]
+
+
+def walk(graph, nids):
+    """
+    Begin a traversal by selecting the matching nodes.
+
+    Parameters:
+        *nids: strings
+            the identity(s) of the node(s) to select
+
+    Returns:
+        A Diablo instance
+    """
+    nids = _make_a_list(nids)
+    if len(nids) > 0:
+        active_nodes = [nid for nid in graph.nodes() if nid in nids]
+        return Diablo(
+            graph=graph,
+            active_nodes=active_nodes)
+    else:
+        return Diablo(graph, set())
+
+
+def read_graphml(
         xml_file: str):
     """
 
@@ -63,16 +93,6 @@ def load_graphml(
             data[keys[key['@key']]] = key['#text']
         if source not in g._edges:
             g._edges[source] = []
-        g._edges[source].append((target, data))
+        g.add_edge(source, target, data.get('relationship'))
 
     return g
-
-# def load(self, json_file):
-#        import ujson as json
-#        reader = inner_file_reader(json_file)
-#        for row in reader:
-#            record = json.loads(row)
-#            if record['type'] == 'node':
-#                self._nodes[record['id']] = record['attributes']
-#            if record['type'] == 'edge':
-#                self._edges[(record['source'], record['target'])] = record['attributes']

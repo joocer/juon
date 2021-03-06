@@ -16,24 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-
-
-"""
-Simplified graph data structure, only suitable for directed graphs.
-
-- Edges are stored in a dictionary, the key is the source node
-- Nodes are stored in a B+Tree
-
-The structure is optimized for 
-Traversing the graph is 
-Getting the details of a specific node is fast
-
-This is not a complete replacement for NetworkX, it is designed and
-optimized for few use cases.
-
-If you want to do more, translate to NetworkX.
-"""
-
 from .index import Index
 
 BTREE_ORDER = 16
@@ -42,10 +24,17 @@ class Graph(object):
 
     __slots__ = ('_nodes', '_edges')
 
-    def __init__(self):
-        self._nodes = {}
-        self._edges = {}
+    def __init__(
+            self,
+            graph = None):
 
+        if graph is None:
+            self._nodes = Index(BTREE_ORDER)
+            self._edges = {}
+        else:
+            self._nodes = graph._nodes
+            self._edges = graph._edges
+    
 
     def _make_a_list(self, obj):
         """ internal helper method """
@@ -58,22 +47,35 @@ class Graph(object):
         import ujson as json
 
         self._edges.save(graph_path + '/edges.index')
+        raise Exception ("Edges aren't a BTree")
         self._nodes.save(graph_path + '/nodes.index')
+
         
-    def add_edge(self, source, target, **kwargs):
-        # add the edge to the grapg
-        self._edges.insert(source, (target, kwargs))
+    def add_edge(self, source, target, relationship):
+        # add the edge to the graph
+        if source not in self._edges:
+            targets = []
+        else:
+            targets = self._edges[source]
+        targets.append((target, relationship,))
+        self._edges[source] = list(set(targets))
+
 
     def add_node(self, node_id, **kwargs):
-        self._nodes[node_id] = kwargs
+        self._nodes.insert(node_id, kwargs)
+
 
     def nodes(self, data=False):
         if data:
             return self._nodes.items()
         return self._nodes.keys()
 
+
     def edges(self):
-        return self._edges.items()
+        for s, records in self._edges.items():
+            for t, r in records:
+                yield s, t, r
+
 
     def breadth_first_search(
             self,
@@ -105,11 +107,13 @@ class Graph(object):
             except KeyError:
                 queue.popleft()
 
+
     def outgoing_edges(
             self,
             source):
         targets = self._edges.get(source) or {}
-        return {a for a,b in targets}
+        return {(source, t, r) for t, r in targets}
+
 
     def descendants_at_distance(
             self,
@@ -133,16 +137,13 @@ class Graph(object):
             queue = next_vertices
         return set()
 
+
     def copy(self):
         g = Graph()
         g._nodes = self._nodes.copy()
         g._edges = self._edges.copy()
         return g
 
-
-    def to_networkx(self):
-        import networkx as nx  # type:ignore
-        raise NotImplementedError()
 
     def subgraph(self, node_list):
         # create a graph based on the nodes we have been given
@@ -156,50 +157,42 @@ class Graph(object):
         return new_graph
 
 
- 
-def inner_file_reader(
-        file_name: str,
-        chunk_size: int = 64*1024*1024,
-        delimiter: str = "\n"):
-    """
-    This is the guts of the reader - it opens a file and reads through it
-    chunk by chunk. This allows huge files to be processed as only a chunk
-    at a time is in memory.
-    """
-    with open(file_name, 'r', encoding="utf8") as f:
-        carry_forward = ""
-        chunk = "INITIALIZED"
-        while len(chunk) > 0:
-            chunk = f.read(chunk_size)
-            augmented_chunk = carry_forward + chunk
-            lines = augmented_chunk.split(delimiter)
-            carry_forward = lines.pop()
-            yield from lines
-        if carry_forward:
-            yield carry_forward
+    def to_networkx(graph):
+        import networkx as nx  # type:ignore
+        g = nx.DiGraph()
+        for s, t, r in graph.edges():
+            g.add_edge(s, t, relationship=r)
+        for node, attribs in graph.nodes(True):
+            if 'kind' in attribs:
+                attribs['node_type'] = attribs['kind']
+                del attribs['kind']
+            g.add_node(node, **attribs)
+        return g
+
+    def epitomize(graph):
+        g = Graph()
+        for s, t, r in graph.edges():
+            node1 = graph[s]
+            node2 = graph[t]
+            if node1 and node2:
+                g.add_edge(node1.get('kind'), node2.get('kind'), r)
+            if node1:
+                g.add_node(node1.get('kind'), kind=node1.get('kind'))
+            if node2:
+                g.add_node(node2.get('kind'), kind=node2.get('kind'))
+        return g
 
 
+    def __repr__(self):
+        return F"Graph - {len(list(self.nodes()))} nodes, {len(list(self.edges()))} edges"
+
+    def __len__(self):
+        return len(list(self.nodes()))
+
+    def __getitem__(self, nid):
+        node = self._nodes.retrieve(nid)
+        if len(node) > 0:
+            return node[0]
+        return {}
 
 
-def get_size(obj, seen=None):
-    import sys
-    """Recursively finds size of objects"""
-    size = sys.getsizeof(obj)
-    if seen is None:
-        seen = set()
-    obj_id = id(obj)
-    if obj_id in seen:
-        return 0
-    # Important mark as seen *before* entering recursion to gracefully handle
-    # self-referential objects
-    seen.add(obj_id)
-    if isinstance(obj, dict):
-        size += sum([get_size(v, seen) for v in obj.values()])
-        size += sum([get_size(k, seen) for k in obj.keys()])
-    elif hasattr(obj, '__dict__'):
-        size += get_size(obj.__dict__, seen)
-    elif hasattr(obj, '__slots__'):
-        size += sum([get_size(getattr(obj, k), seen) for k in obj.__slots__])
-    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
-        size += sum([get_size(i, seen) for i in obj])
-    return size

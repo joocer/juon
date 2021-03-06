@@ -16,20 +16,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-class Diablo(object):
+class Diablo():
 
-    __slots__ = ('graph', 'active_nodes')
+    __slots__ = ('graph', '_active_nodes')
 
     def __init__(
             self,
             graph,
             active_nodes: set = ()):
         """
-        Diablo: A Graph Query Language
-
-        Parameters:
-        - graph: the graph to query and traverse
-        - active_nodes: the nodes which are selected for this instance
+        Diablo: Graph Traversal
         """
         self.graph = graph
 
@@ -38,118 +34,70 @@ class Diablo(object):
             # - the collection active nodes is immutable
             # - sets are faster for look ups 
             if type(active_nodes).__name__ == 'set':
-                self.active_nodes = active_nodes
+                self._active_nodes = active_nodes
             else:
-                self.active_nodes = set(active_nodes)
+                self._active_nodes = set(active_nodes)
         else:
             #print('loading everything')
             # select everything from the base graph
-            self.active_nodes = set(graph.nodes())
+            self._active_nodes = set(graph.nodes())
 
-    def V(self, *nodes):
+
+    def __len__(self):
+        return len(self._active_nodes)
+
+
+    def follow(self, *relationships):
         """
-        Initialize Diablo against a graph.
-        """ 
-        #self.nodes_cache = self.graph.nodes(data=True)
-        return self._is(*nodes)
+        Traverses a graph by following edges with relationship matching
+        on on the list of relationships.
 
-    def has(self, key: str, value: str):
-        """
-        'has' filters graphs by a key/value attribute pairs on nodes.
-
-        parameters:
-        - key: node attribute name to filter on
-        - value: node attribute value to filter on
-
-        returns: new Diablo instance
-        """
-        #print(F'has({key}, {value})')
-        active_nodes = [x for x,y in self.graph.nodes(data=True) if key in y and y[key] == value]
-        #print(len(active_nodes))
-        return Diablo(self.graph, active_nodes)
-
-
-    def out(self, *relationship):
-        """
-        'out' traverses a graph by following edges with the passed relationship.
-
-        parameters:
-        - relationsip(s): traverses node following edges with the stated relationship
-        - key: sets the key which defines the relationship attribute
-
-        returns diablo instance to enable function chaining
+        Parameters:
+            relationsips: strings
+                traverses node following edges with the stated relationship
+        
+        Returns:
+            A new Graph instance to enable function chaining
         """
         active_nodes = []
 
-        for node in self.active_nodes:
-            active_nodes += [target for target, attribs in self.graph.outgoing_edges(node) if attribs['relationship'] in relationship]
+        for node in self._active_nodes:
+            active_nodes += [t for (s, t, r) in self.graph.outgoing_edges(node) if r in relationships]
+        return Diablo(
+            graph=self.graph,
+            active_nodes=active_nodes)
 
-        return Diablo(self.graph, active_nodes)
 
-
-    def values(self, key):
+    def select(self, filter):
         """
-        'values' returns a list of values of the selected nodes.
+        Filters a graph by a function.
 
         Parameters:
-        - key: the attribute to read the value from 
+            filter: Callable
+                node attribute name to filter on
 
-        returns a list of values
+        Returns: 
+            A new Graph instance
         """
-        return list({y.get(key) for x,y in self.graph.nodes(data=True) if x in self.active_nodes})
+        active_nodes = [x for x,y in self.graph.nodes(data=True) if filter(y)]
+        return Diablo(
+            graph=self.graph,
+            active_nodes=active_nodes)
 
-        #nodes = self.nodes()
-        #return {node.get(key) for node in nodes}
 
-    def groupCount(self, key):
-        """
-        'groupCount' counts nodes per key attribute
+    def active_nodes(self, data=False):
+        if not data:
+            return self._active_nodes
+        return [self.graph[node] for node in self._active_nodes]
 
-        Parameters:
-        - key: key to group by
 
-        returns: a dictionary of counts
-        """
-        from collections import Counter
-        nodes = Counter([y.get(key) for x,y in self._get_cached_active_nodes().items()])
-        return dict(nodes)
+    def list_relationships(self):
+        relationships = []
+        for node in self._active_nodes:
+            relationships += {r for (s, t, r) in self.graph.outgoing_edges(node)}
+        return set(relationships)
+        
 
-    def _is(self, *identity):
-        """
-        'is' explicitly selects nodes.
+    def __repr__(self):
+        return F"Graph - {len(list(self.graph.nodes()))} nodes ({len(self._active_nodes)} selected), {len(list(self.graph.edges()))} edges"
 
-        Parameters:
-        - identity(s): the identity(s) of the node(s) to select
-
-        Returns:
-            A new Diablo instance
-        """
-        print('<<', identity)
-        print('**', list(self.graph.nodes()))
-        active_nodes = [ident for ident in self.graph.nodes() if ident in identity]
-        print('>>', active_nodes)
-        return Diablo(self.graph, active_nodes)
-
-    def nodes(self, data=False):
-        """
-        Returns the currently selected nodes
-        """
-        if data:
-            fetch = self.graph._nodes.retrieve
-            result = []
-            for item in [fetch(node) for node in self.active_nodes]:
-                result.append(item)
-            return result
-        return self.active_nodes
-
-    def edges(self, data=False):
-        """
-        Returns all edges of the base graph
-        """
-        return self.graph.edges(data=data)
-
-    def __len__(self):
-        return len(self.active_nodes)
-
-    def __str__(self):
-        return F"Graph with {len(self.active_nodes)} selected nodes"

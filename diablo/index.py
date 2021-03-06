@@ -1,13 +1,29 @@
 """
-Adapted From:
+B+Tree Code Adapted From:
+
 https://gist.github.com/savarin/69acd246302567395f65ad6b97ee503d
 
-No explicit license when accessed - not attested but reasonably assumed to be
-MIT Licence as appears to be the prefered licence by Ezzeri Esa (original 
-author).
+No explicit license when accessed - not attested but reasonably assumed 
+to be MIT Licence as appears to be the prefered licence by Ezzeri Esa 
+(original author). Accessed 2nd March 2020.
 
-Accessed 2nd March 2020.
+Other code:
+
+(C) 2021 Justin Joyce.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 """
+from functools import lru_cache
 
 
 class Node(object):
@@ -117,6 +133,7 @@ class Index(object):
         order (int): The maximum number of keys each node can hold.
     """
     def __init__(self, order=8):
+        self._order = order
         self.root = Node(order)
 
     def _find(self, node, key):
@@ -169,6 +186,7 @@ class Index(object):
             if parent and not parent.is_full():
                 self._merge(parent, child, index)
 
+    @lru_cache(32)
     def retrieve(self, key):
         """Returns a value for a given key, and None if the key does not exist."""
         child = self.root
@@ -180,7 +198,7 @@ class Index(object):
             if key == item:
                 return child._values[i]
 
-        return None
+        return []
 
     def show(self):
         """Prints the keys at each level."""
@@ -197,6 +215,11 @@ class Index(object):
         with open(filename, mode='w') as file:
             for key, attributes in self.items():
                 file.write(json.dumps({"key":key, "value": attributes}) + '\n')
+
+    def copy(self):
+        k = [k for k,v in self.items()]
+        v = [v for k,v in self.items()]
+        return Index.bulk_load(k, v, self._order)
 
     @staticmethod
     def read_file(filename, order=8):
@@ -277,3 +300,7 @@ class Index(object):
         b.root._keys = [n._keys[len(n._keys) - 1] + 'X' for i,n in enumerate(b.root._values)]
         
         return b
+
+
+
+
