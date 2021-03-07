@@ -18,7 +18,7 @@ limitations under the License.
 
 class Diablo():
 
-    __slots__ = ('graph', '_active_nodes')
+    __slots__ = ('graph', '_active_nodes', '_active_nodes_cache')
 
     def __init__(
             self,
@@ -28,6 +28,7 @@ class Diablo():
         Diablo: Graph Traversal
         """
         self.graph = graph
+        self._active_nodes_cache = None
 
         if active_nodes:
             # ensure it is a set
@@ -96,14 +97,15 @@ class Diablo():
 
 
     def values(self, key):
-        result = [attrib[key] for nid, attrib in self.active_nodes(data=True) if key in attrib]
-        return result
+        return {attrib[key] for nid, attrib in self.active_nodes(data=True) if key in attrib}
 
 
     def active_nodes(self, data=False):
         if not data:
             return self._active_nodes
-        return [(nid, self.graph[nid]) for nid in self._active_nodes]
+        if not self._active_nodes_cache:
+            self._active_nodes_cache = [(nid, self.graph[nid]) for nid in self._active_nodes]
+        return  self._active_nodes_cache
 
 
     def list_relationships(self):
