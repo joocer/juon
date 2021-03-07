@@ -97,7 +97,7 @@ class Diablo():
 
 
     def values(self, key):
-        return {attrib[key] for nid, attrib in self.active_nodes(data=True) if key in attrib}
+        return list({attrib[key] for nid, attrib in self.active_nodes(data=True) if key in attrib})
 
 
     def active_nodes(self, data=False):
