@@ -103,7 +103,10 @@ def load(path):
     import ujson as json
 
     g = Graph()
-    g._nodes = BTree.read_file(path + '/nodes.jsonl')
+    with open(path + '/nodes.jsonl', 'r') as node_file:
+        for line in node_file:
+            node = json.loads(line)
+            g.add_node(node['nid'], **node['attributes'])
 
     with open(path + '/edges.jsonl', 'r') as edge_file:
         for line in edge_file:

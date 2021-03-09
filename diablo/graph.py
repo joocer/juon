@@ -16,25 +16,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .index.btree import BTree
-
-
-BTREE_ORDER = 16
 
 class Graph(object):
+    """
+    Graph object, optimized for traversal.
 
+    Edges are stored in a dictionary, the key is the source node to speed up 
+    finding outgoing edges. The Edges only have three pieces of data:
+        - the source node (the key)
+        - the target node
+        - the relationship
+    The target and the relationship are stored as a tuple, the edge dictionary
+    stores lists of tuples.
+
+    Nodes are stored as a B+Tree, this gives slightly slower performance 
+    than a dictionary but has a distinct advantage in that it sorts the
+    values enabling binary searching of the dataset without loading into
+    memory.
+    """
     __slots__ = ('_nodes', '_edges')
 
-    def __init__(
-            self,
-            graph = None):
-
-        if graph is None:
-            self._nodes = BTree(BTREE_ORDER)
-            self._edges = {}
-        else:
-            self._nodes = graph._nodes
-            self._edges = graph._edges
+    def __init__(self):
+        """
+        Directed Graph.
+        """
+        self._nodes = {}
+        self._edges = {}
     
 
     def _make_a_list(self, obj):
@@ -45,16 +52,28 @@ class Graph(object):
 
 
     def save(self, graph_path):
+        """
+        Persist a graph to storage. It saves nodes and edges to separate files.
+
+        Parameters:
+            graph_path: string
+                The folder to save the node and edge files to
+        """
         import ujson as json
         with open(graph_path + '/edges.jsonl', 'w') as edge_file:
             for source, target, relationship in self.edges():
                 edge_record = {"source": source, "target": target, "relationship": relationship}
                 edge_file.write(json.dumps(edge_record) + '\n')
-        self._nodes.save(graph_path + '/nodes.jsonl')
+        with open(graph_path + '/nodes.jsonl', 'w') as node_file:
+            for nid, attributes in self.nodes(data=True):
+                node_record = {"nid": nid, "attributes": attributes}
+                node_file.write(json.dumps(node_record) + '\n')
 
-        
+
     def add_edge(self, source, target, relationship):
-        # add the edge to the graph
+        """
+        Add edge to the graph
+        """
         if source not in self._edges:
             targets = []
         else:
@@ -63,8 +82,8 @@ class Graph(object):
         self._edges[source] = list(set(targets))
 
 
-    def add_node(self, node_id, **kwargs):
-        self._nodes.insert(node_id, kwargs)
+    def add_node(self, nid, **kwargs):
+        self._nodes[nid] = kwargs
 
 
     def nodes(self, data=False):
@@ -160,18 +179,21 @@ class Graph(object):
 
 
     def to_networkx(graph):
+        """
+        Convert a Diablo graph to a NetworkX graph
+        """
         import networkx as nx  # type:ignore
         g = nx.DiGraph()
         for s, t, r in graph.edges():
             g.add_edge(s, t, relationship=r)
         for node, attribs in graph.nodes(True):
-            if 'kind' in attribs:
-                attribs['node_type'] = attribs['kind']
-                del attribs['kind']
             g.add_node(node, **attribs)
         return g
 
     def epitomize(graph):
+        """
+        Summarize a Graph by reducing to only the node_types and relationships
+        """
         g = Graph()
         for s, t, r in graph.edges():
             node1 = graph[s]
