@@ -30,23 +30,13 @@ class Diablo():
         self.graph = graph
         self._active_nodes_cache = None
 
-        if active_nodes:
-            # ensure it is a set
-            # - the collection active nodes is immutable
-            # - sets are faster for look ups 
-            if type(active_nodes).__name__ == 'set':
-                self._active_nodes = active_nodes
-            else:
-                self._active_nodes = set(active_nodes)
+        # ensure it is a set
+        # - the collection active nodes is immutable
+        # - sets are faster for look ups 
+        if type(active_nodes).__name__ == 'set':
+            self._active_nodes = active_nodes
         else:
-            #print('loading everything')
-            # select everything from the base graph
-            self._active_nodes = set(graph.nodes())
-
-
-    def __len__(self):
-        return len(self._active_nodes)
-
+            self._active_nodes = set(active_nodes)
 
     def follow(self, *relationships):
         """
@@ -68,7 +58,6 @@ class Diablo():
             graph=self.graph,
             active_nodes=active_nodes)
 
-
     def select(self, filter):
         """
         Filters the active nodes by a function.
@@ -85,7 +74,6 @@ class Diablo():
             graph=self.graph,
             active_nodes=active_nodes)
 
-
     def has(self, key, value):
         """
         Filters the active nodes by a key/value match
@@ -95,10 +83,8 @@ class Diablo():
             graph=self.graph,
             active_nodes=active_nodes)
 
-
     def values(self, key):
         return list({attrib[key] for nid, attrib in self.active_nodes(data=True) if key in attrib})
-
 
     def active_nodes(self, data=False):
         if not data:
@@ -107,14 +93,14 @@ class Diablo():
             self._active_nodes_cache = [(nid, self.graph[nid]) for nid in self._active_nodes]
         return  self._active_nodes_cache
 
-
     def list_relationships(self):
         relationships = []
         for node in self._active_nodes:
             relationships += {r for (s, t, r) in self.graph.outgoing_edges(node)}
         return set(relationships)
         
-
     def __repr__(self):
         return F"Graph - {len(list(self.graph.nodes()))} nodes ({len(self._active_nodes)} selected), {len(list(self.graph.edges()))} edges"
 
+    def __len__(self):
+        return len(self._active_nodes)

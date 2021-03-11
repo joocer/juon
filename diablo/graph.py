@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import orjson as json
 
 class Graph(object):
     """
@@ -59,11 +60,11 @@ class Graph(object):
             graph_path: string
                 The folder to save the node and edge files to
         """
-        import ujson as json
-        with open(graph_path + '/edges.jsonl', 'w') as edge_file:
-            for source, target, relationship in self.edges():
-                edge_record = {"source": source, "target": target, "relationship": relationship}
-                edge_file.write(json.dumps(edge_record) + '\n')
+        
+        #with open(graph_path + '/edges.jsonl', 'w') as edge_file:
+        #    for source, target, relationship in self.edges():
+        #        edge_record = {"source": source, "target": target, "relationship": relationship}
+        #        edge_file.write(json.dumps(edge_record) + '\n')
         with open(graph_path + '/nodes.jsonl', 'w') as node_file:
             for nid, attributes in self.nodes(data=True):
                 node_record = {"nid": nid, "attributes": attributes}
@@ -89,7 +90,7 @@ class Graph(object):
     def nodes(self, data=False):
         if data:
             return self._nodes.items()
-        return self._nodes.keys()
+        return list(self._nodes.keys())
 
 
     def edges(self):
@@ -115,19 +116,27 @@ class Graph(object):
         from collections import deque
         
         visited = set([source])
-        queue = deque([(source, self.outgoing_edges(source))])
+        queue = deque([self.outgoing_edges(source)])
+
+        new_edges = {}
         
         while queue:
-            parent, children = queue[0]
+            children = queue[0]
             try:
                 child = children.pop()
                 if child not in visited:
-                    yield parent, child
+
+                    s,t,r = child
+                    targets = new_edges.get(source, [])
+                    targets.append((t, r,))
+                    new_edges[s] = targets
+
                     visited.add(child)
                     queue.append((child, self.outgoing_edges(child)))
             except KeyError:
                 queue.popleft()
 
+        return new_edges
 
     def outgoing_edges(
             self,
@@ -214,9 +223,6 @@ class Graph(object):
         return len(list(self.nodes()))
 
     def __getitem__(self, nid):
-        node = self._nodes.retrieve(nid)
-        if len(node) > 0:
-            return node[0]
-        return {}
+        return self._nodes.get(nid, {})
 
 

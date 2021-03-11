@@ -18,8 +18,8 @@ limitations under the License.
 import types
 from .graph import Graph
 from .diablo import Diablo
-from .index.btree import BTree
 from .errors import NodeNotFoundError
+import orjson as json
 try:
     import xmltodict  # type:ignore
 except ImportError:
@@ -98,19 +98,29 @@ def read_graphml(
 
     return g
 
-def load(path):
 
-    import ujson as json
-
-    g = Graph()
-    with open(path + '/nodes.jsonl', 'r') as node_file:
+def _load_node_file(filename):
+    nodes = []
+    with open(filename, 'r') as node_file:
         for line in node_file:
             node = json.loads(line)
-            g.add_node(node['nid'], **node['attributes'])
+            nodes.append((node['nid'], node['attributes'],))
+    results = {n:a for n, a in nodes}
+    return results
 
-    with open(path + '/edges.jsonl', 'r') as edge_file:
+def _load_edge_file(filename):
+    edges = []
+    with open(filename, 'r') as edge_file:
         for line in edge_file:
-            edge = json.loads(line)
-            g.add_edge(edge['source'], edge['target'], edge['relationship'])
+            node = json.loads(line)
+            edges.append((node['source'], node['target'], node['relationship'],))
+    results = {s:[] for s, t, r in edges}
+    for s, t, r in edges:
+        results[s].append((t,r,))
+    return results
 
+def load(path):
+    g = Graph()
+    g._nodes = _load_node_file(path + '/nodes.jsonl')
+    g._edges = _load_edge_file(path + '/edges.jsonl')
     return g
