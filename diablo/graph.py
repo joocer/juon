@@ -265,9 +265,9 @@ class Graph(object):
             if node1 and node2:
                 g.add_edge(node1.get('node_type'), node2.get('node_type'), r)
             if node1:
-                g.add_node(node1.get('node_type'), node_type=node1.get('node_type'))
+                g.add_node(node1.get('node_type'), {"node_type":node1.get('node_type')})
             if node2:
-                g.add_node(node2.get('node_type'), node_type=node2.get('node_type'))
+                g.add_node(node2.get('node_type'), {"node_type":node2.get('node_type')})
         return g
 
 
