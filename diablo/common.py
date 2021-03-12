@@ -93,7 +93,7 @@ def read_graphml(graphml_file: str):
             data[keys[key['@key']]] = key['#text']
         if source not in g._edges:
             g._edges[source] = []
-        g.add_edge(source, target, data.get('relationship'))
+        g.add_edge(source, target, data.get('relationship'))  # type:ignore
 
     return g
 
