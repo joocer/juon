@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from typing import Callable
 
 class Diablo():
 
@@ -23,9 +24,13 @@ class Diablo():
     def __init__(
             self,
             graph,
-            active_nodes: set = ()):
+            active_nodes: set = set()):
         """
         Diablo: Graph Traversal
+
+        Parameters:
+            graph: Graph
+            active_nodes: Iterable
         """
         self.graph = graph
         self._active_nodes_cache = None
@@ -40,15 +45,15 @@ class Diablo():
 
     def follow(self, *relationships):
         """
-        Traverses a graph by following edges with relationship matching
-        on on the list of relationships.
+        Traverses a graph by following edges from the active nodes with 
+        a relationship on the list of relationships.
 
         Parameters:
             relationsips: strings
                 traverses node following edges with the stated relationship
         
         Returns:
-            A new Graph instance to enable function chaining
+            Diablo
         """
         active_nodes = []
 
@@ -58,7 +63,7 @@ class Diablo():
             graph=self.graph,
             active_nodes=active_nodes)
 
-    def select(self, filter):
+    def select(self, filter: Callable):
         """
         Filters the active nodes by a function.
 
@@ -67,9 +72,9 @@ class Diablo():
                 node attribute name to filter on
 
         Returns: 
-            A new Graph instance
+            Diablo
         """
-        active_nodes = [nid for nid, attrib in self.active_nodes(data=True) if filter(attrib)]
+        active_nodes = {nid for nid, attrib in self.active_nodes(data=True) if filter(attrib)}
         return Diablo(
             graph=self.graph,
             active_nodes=active_nodes)

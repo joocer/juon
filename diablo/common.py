@@ -18,20 +18,15 @@ limitations under the License.
 import types
 from .graph import Graph
 from .diablo import Diablo
-from .errors import NodeNotFoundError
-import orjson as json
+from pathlib import Path
 try:
     import xmltodict  # type:ignore
 except ImportError:
     pass
-
-BTREE_ORDER = 16
-
-def _make_a_list(obj):
-    """ internal helper method """
-    if isinstance(obj, (list, types.GeneratorType)):
-        return obj
-    return [obj]
+try:
+    import orjson as json
+except ImportError:
+    import ujson as json  # type:ignore
 
 
 def walk(graph, nids=None):
@@ -55,14 +50,18 @@ def walk(graph, nids=None):
         return Diablo(graph, set())
 
 
-def read_graphml(
-        xml_file: str):
+def read_graphml(graphml_file: str):
     """
+    Load a GraphML file into a Diablo Graph
 
     Parameters:
-        xml_file: string
+        graphml_file: string
+            The GraphML file to load
+    
+    Returns:
+        Graph
     """
-    with open(xml_file, 'r') as fd:
+    with open(graphml_file, 'r') as fd:
         xml_dom = xmltodict.parse(fd.read())
 
     g = Graph()
@@ -72,7 +71,7 @@ def read_graphml(
     for key in xml_dom['graphml'].get('key', {}):
         keys[key['@id']] = key['@attr.name']
 
-    g._nodes = BTree(BTREE_ORDER)
+    g._nodes = {}
     # load the nodes
     for node in xml_dom['graphml']['graph'].get('node', {}):
         data = {}
@@ -83,7 +82,7 @@ def read_graphml(
             except:
                 skip = True
         if not skip:
-            g._nodes.insert(node['@id'], data)
+            g.add_node(node['@id'], **data)
 
     g._edges = {}
     for edge in xml_dom['graphml']['graph'].get('edge', {}):
@@ -99,28 +98,47 @@ def read_graphml(
     return g
 
 
-def _load_node_file(filename):
+def _load_node_file(path: Path):
+    """ load the node information from a file """
     nodes = []
-    with open(filename, 'r') as node_file:
+    with open(path, 'r') as node_file:
         for line in node_file:
             node = json.loads(line)
             nodes.append((node['nid'], node['attributes'],))
     results = {n:a for n, a in nodes}
     return results
 
-def _load_edge_file(filename):
+def _load_edge_file(path: Path):
+    """ load the edge information from a file """
     edges = []
-    with open(filename, 'r') as edge_file:
+    with open(path, 'r') as edge_file:
         for line in edge_file:
             node = json.loads(line)
             edges.append((node['source'], node['target'], node['relationship'],))
-    results = {s:[] for s, t, r in edges}
+    results:dict = {s:[] for s, t, r in edges}
     for s, t, r in edges:
         results[s].append((t,r,))
     return results
 
-def load(path):
+def load(path: str):
+    """
+    Load a saved Diablo graph.
+
+    Parameters:
+        path: string
+            The path to the folder containing the Graph files
+
+    Returns:
+        Graph
+    """
     g = Graph()
-    g._nodes = _load_node_file(path + '/nodes.jsonl')
-    g._edges = _load_edge_file(path + '/edges.jsonl')
+    graph_path = Path(path)
+    g._nodes = _load_node_file(graph_path / 'nodes.jsonl')
+    g._edges = _load_edge_file(graph_path / 'edges.jsonl')
     return g
+
+def _make_a_list(obj):
+    """ internal helper method """
+    if isinstance(obj, (set, list, types.GeneratorType)):
+        return obj
+    return [obj]

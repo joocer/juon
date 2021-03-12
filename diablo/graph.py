@@ -45,35 +45,53 @@ class Graph(object):
         self._edges = {}
     
 
-    def _make_a_list(self, obj):
+    def _make_a_list(
+            self,
+            obj):
         """ internal helper method """
         if isinstance(obj, list):
             return obj
         return [obj]
 
 
-    def save(self, graph_path):
+    def save(
+            self,
+            graph_path):
         """
         Persist a graph to storage. It saves nodes and edges to separate files.
 
         Parameters:
             graph_path: string
-                The folder to save the node and edge files to
+                The folder ?to save the node and edge files to
         """
-        
-        #with open(graph_path + '/edges.jsonl', 'w') as edge_file:
-        #    for source, target, relationship in self.edges():
-        #        edge_record = {"source": source, "target": target, "relationship": relationship}
-        #        edge_file.write(json.dumps(edge_record) + '\n')
+        with open(graph_path + '/edges.jsonl', 'w') as edge_file:
+            for source, target, relationship in self.edges():
+                edge_record = {"source": source, "target": target, "relationship": relationship}
+                edge_file.write(json.dumps(edge_record) + '\n')
         with open(graph_path + '/nodes.jsonl', 'w') as node_file:
             for nid, attributes in self.nodes(data=True):
                 node_record = {"nid": nid, "attributes": attributes}
                 node_file.write(json.dumps(node_record) + '\n')
 
 
-    def add_edge(self, source, target, relationship):
+    def add_edge(
+            self,
+            source: str,
+            target: str,
+            relationship: str):
         """
         Add edge to the graph
+
+        Note:
+            This does not create nodes if they don't already exist
+
+        Parameters:
+            source: string
+                The source node
+            target: string
+                The target node
+            relationship: string
+                The relationship between the source and target nodes
         """
         if source not in self._edges:
             targets = []
@@ -83,17 +101,48 @@ class Graph(object):
         self._edges[source] = list(set(targets))
 
 
-    def add_node(self, nid, **kwargs):
-        self._nodes[nid] = kwargs
+    def add_node(
+            self, 
+            nid: str,
+            attributes:dict = {}):
+        """
+        Add node to the graph
+
+        Parameters:
+            nid: string
+                The Node ID for the node (unique)
+            attributes: dictionary (optional)
+                The attributes of the node
+        """
+        self._nodes[nid] = attributes
 
 
-    def nodes(self, data=False):
+    def nodes(
+            self,
+            data=False):
+        """
+        The nodes which comprise the graph
+
+        Parameters:
+            data: boolean (optional)
+                if True return the details of the nodes, if False just return
+                the list of node IDs
+
+        Returns:
+            List
+        """
         if data:
             return self._nodes.items()
         return list(self._nodes.keys())
 
 
     def edges(self):
+        """
+        The edges which comprise the graph
+
+        Returns:
+            Generator of Tuples of (Source, Target and Relationship)
+        """
         for s, records in self._edges.items():
             for t, r in records:
                 yield s, t, r
@@ -103,44 +152,50 @@ class Graph(object):
             self,
             source):
         """
-        Search a tree for nodes we can walk to from a given node. This uses a 
-        variation of the algorith used by NetworkX optimized for the Diablo
-        data structures.
-        
-        https://networkx.org/documentation/networkx-1.10/_modules/networkx/algorithms/traversal/breadth_first_search.html#bfs_tree
-        
+        Search a tree for nodes we can walk to from a given node.
+
         Parameters:
             source: string
                 The node to walk from
+
+        Returns:
         """
+        # This uses a variation of the algorith used by NetworkX optimized for
+        # the Diablo data structures.
+        #
+        # https://networkx.org/documentation/networkx-1.10/_modules/networkx/algorithms/traversal/breadth_first_search.html#bfs_tree
+        
         from collections import deque
         
         visited = set([source])
-        queue = deque([self.outgoing_edges(source)])
+        queue = deque([(source, self.outgoing_edges(source),)])
 
-        new_edges = {}
-        
+        new_edges = []
+
         while queue:
-            children = queue[0]
-            try:
-                child = children.pop()
-                if child not in visited:
-
-                    s,t,r = child
-                    targets = new_edges.get(source, [])
-                    targets.append((t, r,))
-                    new_edges[s] = targets
-
-                    visited.add(child)
-                    queue.append((child, self.outgoing_edges(child)))
-            except KeyError:
-                queue.popleft()
-
+            parent, children = queue[0]
+            for child in children:
+                s,t,r = child
+                new_edges.append(child)
+                if t not in visited:
+                    visited.add(t)
+                    queue.append((t, self.outgoing_edges(t),))
+            queue.popleft()
         return new_edges
 
     def outgoing_edges(
             self,
             source):
+        """
+        Get the list of edges traversable from a given node.
+
+        Parameters:
+            source: string
+                The node to get the outgoing edges for
+
+        Returns:
+            Set of Tuples (Source, Target, Relationship)
+        """
         targets = self._edges.get(source) or {}
         return {(source, t, r) for t, r in targets}
 
