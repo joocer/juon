@@ -16,15 +16,15 @@ def test_outgoing_edges():
 
     outgoing = graph.outgoing_edges('Sharlene')
 
-    assert len(outgoing) == 3
+    assert len(outgoing) == 4
     
     sources = [s for s,t,r in outgoing]
     targets = [t for s,t,r in outgoing]
     relationships = [r for s,t,r in outgoing]
 
     assert set(sources) == {'Sharlene'}
-    assert sorted(targets) == ['Bindoon', 'Ceanne', 'Lainie']
-    assert sorted(relationships) == ['Daughter', 'Lives In', 'Sister']
+    assert sorted(targets) == ['Bindoon', 'Ceanne', 'Hungry Jacks', 'Lainie']
+    assert sorted(relationships) == ['Daughter', 'Likes', 'Lives In', 'Sister']
 
 def test_epitomize():
 
@@ -33,7 +33,7 @@ def test_epitomize():
     summ = graph.epitomize()
     # are the node and edge counts right?
     assert len(summ.nodes()) == 3
-    assert len(list(summ.edges())) == 5
+    assert len(list(summ.edges())) == 6
 
     assert sorted(summ.nodes()) == ['Locality', 'Person', 'Restaurant']
 
@@ -46,17 +46,17 @@ def test_bfs():
     assert len(bfs) == 0
 
     bfs = graph.breadth_first_search('Sharlene')
-    assert len(bfs) == 9
+    assert len(bfs) == 15
     assert 'Saturn' not in bfs
 
     bfs = graph.breadth_first_search('Sharlene', 0)
     assert len(bfs) == 0
 
     bfs = graph.breadth_first_search('Sharlene', 1)
-    assert len(bfs) == 3
+    assert len(bfs) == 4
 
     bfs = graph.breadth_first_search('Sharlene', 2)
-    assert len(bfs) == 9
+    assert len(bfs) == 14
 
 
 if __name__ == "__main__":

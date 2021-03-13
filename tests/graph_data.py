@@ -41,8 +41,12 @@ def build_graph():
     g.add_edge('Lainie', 'Sharlene', 'Mother')
     g.add_edge('Lainie', 'Ceanne', 'Mother')
 
+    g.add_edge('Sharlene', 'Hungry Jacks', 'Likes')
+    g.add_edge('Ceanne', 'Kailis Bros', 'Likes')
+    g.add_edge('Lainie', 'Kailis Bros', 'Likes')
+
     return g
 
 def graph_is_as_expected(graph):
     assert sorted(graph.nodes()) == ['Bindoon', 'Ceanne', 'Chicken Treat', 'Gingin', 'Hungry Jacks', 'Kailis Bros', 'Lainie', 'Saturn', 'Sharlene', 'Toodyay']
-    assert len(list(graph.edges())) == 14
+    assert len(list(graph.edges())) == 17
