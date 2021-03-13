@@ -15,7 +15,7 @@ jobs:
           python-version: '3.8' 
           
       - name: install pytest and coverage
-        run:  pip install pytest coverage
+        run:  pip install pytest coverage networkx
         
       - name: install base requirements
         run:  pip install -r $GITHUB_WORKSPACE/requirements.txt
@@ -24,7 +24,7 @@ jobs:
         run: coverage run -m pytest 
 
       - name: report on coverage
-        run: coverage report --include=diablo* --fail-under=50
+        run: coverage report --include=diablo* --fail-under=80
 
   bandit:
     runs-on: ubuntu-latest
