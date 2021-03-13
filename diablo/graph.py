@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import orjson as json
+from pathlib import Path
 
 class Graph(object):
     """
@@ -64,14 +65,17 @@ class Graph(object):
             graph_path: string
                 The folder ?to save the node and edge files to
         """
-        with open(graph_path + '/edges.jsonl', 'w') as edge_file:
+        path = Path(graph_path)
+        path.mkdir(exist_ok=True)
+
+        with open(path / 'edges.jsonl', 'w') as edge_file:
             for source, target, relationship in self.edges():
                 edge_record = {"source": source, "target": target, "relationship": relationship}
-                edge_file.write(json.dumps(edge_record) + '\n')
-        with open(graph_path + '/nodes.jsonl', 'w') as node_file:
+                edge_file.write(json.dumps(edge_record).decode() + '\n')
+        with open(path / 'nodes.jsonl', 'w') as node_file:
             for nid, attributes in self.nodes(data=True):
                 node_record = {"nid": nid, "attributes": attributes}
-                node_file.write(json.dumps(node_record) + '\n')
+                node_file.write(json.dumps(node_record).decode() + '\n')
 
 
     def add_edge(

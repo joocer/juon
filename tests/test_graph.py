@@ -2,19 +2,12 @@ import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from diablo import Graph
-from graph_data import build_graph
+from graph_data import build_graph, test_graph_is_as_expected
 
 def test_graph():
 
     graph = build_graph()
-
-    # are the node and edge counts right?
-    assert len(graph.nodes()) == 10
-    assert len(list(graph.edges())) == 14
-
-    nodes = graph.nodes(data=True)
-    edges = list(graph.edges())
-
+    test_graph_is_as_expected(graph)
 
 
 def test_outgoing_edges():

@@ -82,7 +82,7 @@ def read_graphml(graphml_file: str):
             except:
                 skip = True
         if not skip:
-            g.add_node(node['@id'], **data)
+            g.add_node(node['@id'], data)
 
     g._edges = {}
     for edge in xml_dom['graphml']['graph'].get('edge', {}):
