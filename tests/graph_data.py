@@ -43,6 +43,6 @@ def build_graph():
 
     return g
 
-def test_graph_is_as_expected(graph):
+def graph_is_as_expected(graph):
     assert sorted(graph.nodes()) == ['Bindoon', 'Ceanne', 'Chicken Treat', 'Gingin', 'Hungry Jacks', 'Kailis Bros', 'Lainie', 'Saturn', 'Sharlene', 'Toodyay']
     assert len(list(graph.edges())) == 14

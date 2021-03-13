@@ -2,12 +2,12 @@ import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from diablo import Graph
-from graph_data import build_graph, test_graph_is_as_expected
+from graph_data import build_graph, graph_is_as_expected
 
 def test_graph():
 
     graph = build_graph()
-    test_graph_is_as_expected(graph)
+    graph_is_as_expected(graph)
 
 
 def test_outgoing_edges():
