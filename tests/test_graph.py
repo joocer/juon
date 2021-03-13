@@ -44,8 +44,33 @@ def test_epitomize():
 
     assert sorted(summ.nodes()) == ['Locality', 'Person', 'Restaurant']
 
+def test_bfs():
+
+    graph = build_graph()
+
+    # this should exclude the node with no edges
+    bfs = graph.breadth_first_search('Saturn')
+    assert len(bfs) == 0
+
+    bfs = graph.breadth_first_search('Sharlene')
+    assert len(bfs) == 9
+    assert 'Saturn' not in bfs
+
+    bfs = graph.breadth_first_search('Sharlene', 0)
+    assert len(bfs) == 0
+
+    bfs = graph.breadth_first_search('Sharlene', 1)
+    assert len(bfs) == 3
+
+    bfs = graph.breadth_first_search('Sharlene', 2)
+    assert len(bfs) == 9
+
+
 if __name__ == "__main__":
 
     test_graph()
     test_outgoing_edges()
     test_epitomize()
+    test_bfs()
+
+    print('okay')

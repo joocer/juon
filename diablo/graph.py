@@ -150,14 +150,16 @@ class Graph(object):
 
     def breadth_first_search(
             self,
-            source):
+            source:str,
+            depth:int = 100):
         """
         Search a tree for nodes we can walk to from a given node.
 
         Parameters:
             source: string
                 The node to walk from
-
+            depth: integer
+                The maximum distance to walk from source
         Returns:
         """
         # This uses a variation of the algorith used by NetworkX optimized for
@@ -167,19 +169,22 @@ class Graph(object):
         
         from collections import deque
         
+        distance = 0
+
         visited = set([source])
-        queue = deque([(source, self.outgoing_edges(source),)])
+        queue = deque([(source, distance, self.outgoing_edges(source),)])
 
         new_edges = []
 
         while queue:
-            parent, children = queue[0]
-            for child in children:
-                s,t,r = child
-                new_edges.append(child)
-                if t not in visited:
-                    visited.add(t)
-                    queue.append((t, self.outgoing_edges(t),))
+            parent, node_distance, children = queue[0]
+            if node_distance < depth:
+                for child in children:
+                    s,t,r = child
+                    new_edges.append(child)
+                    if t not in visited:
+                        visited.add(t)
+                        queue.append((t, node_distance + 1, self.outgoing_edges(t),))
             queue.popleft()
         return new_edges
 
@@ -200,46 +205,11 @@ class Graph(object):
         return {(source, t, r) for t, r in targets}
 
 
-    def descendants_at_distance(
-            self,
-            source,
-            distance):
-
-        current_distance = 0
-        queue = {source}
-        visited = {source}
-
-        while queue:
-            if current_distance == distance:
-                return queue
-            current_distance += 1
-            next_vertices = set()
-            for vertex in queue:
-                for child in self.outgoing_edges(vertex):
-                    if child not in visited:
-                        visited.add(child)
-                        next_vertices.add(child)
-            queue = next_vertices
-        return set()
-
-
     def copy(self):
         g = Graph()
         g._nodes = self._nodes.copy()
         g._edges = self._edges.copy()
         return g
-
-
-    def subgraph(self, node_list):
-        # create a graph based on the nodes we have been given
-        new_graph = Graph()
-        for node in node_list:
-            edges = self._edges[node]
-            for target, attrib in edges:
-                if target in node_list:
-                    new_graph.add_edge(node, target, **attrib)
-            new_graph.add_node(node, self._nodes[node])
-        return new_graph
 
 
     def to_networkx(graph):
