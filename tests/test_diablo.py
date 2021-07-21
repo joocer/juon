@@ -2,8 +2,9 @@ import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from juon import Graph
-from graph_data import build_graph, graph_is_as_expected
-import juon
+from juon.graphs import walk
+from data.graph_data import build_graph, graph_is_as_expected
+
 
 
 def test_traversal():
@@ -11,7 +12,7 @@ def test_traversal():
     graph = build_graph()
     graph_is_as_expected(graph)
 
-    d_1 = juon.walk(graph, 'Lainie')
+    d_1 = walk(graph, 'Lainie')
 
     # test the start is from the right point
     assert sorted(d_1.list_relationships()) == ['Likes', 'Lives In', 'Mother']

@@ -17,7 +17,7 @@ limitations under the License.
 """
 import types
 from .graph import Graph
-from .juon import JuOn
+from .graph_traversal import GraphTraversal
 from pathlib import Path
 try:
     import xmltodict  # type:ignore
@@ -43,11 +43,11 @@ def walk(graph, nids=None):
     if nids:
         nids = _make_a_list(nids)
         if len(nids) > 0:
-            return JuOn(
+            return GraphTraversal(
                 graph=graph,
                 active_nodes=nids)
     else:
-        return JuOn(graph, set())
+        return GraphTraversal(graph, set())
 
 
 def read_graphml(graphml_file: str):
