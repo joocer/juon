@@ -1,5 +1,5 @@
 """
-Diablo: Python Graph Library
+JuOn: Python Graph Library
 
 (C) 2021 Justin Joyce.
 
@@ -167,7 +167,7 @@ class Graph(object):
         Returns:
         """
         # This uses a variation of the algorith used by NetworkX optimized for
-        # the Diablo data structures.
+        # the juon data structures.
         #
         # https://networkx.org/documentation/networkx-1.10/_modules/networkx/algorithms/traversal/breadth_first_search.html#bfs_tree
         
@@ -218,7 +218,7 @@ class Graph(object):
 
     def to_networkx(graph):
         """
-        Convert a Diablo graph to a NetworkX graph
+        Convert a JuOn graph to a NetworkX graph
         """
         import networkx as nx  # type:ignore
         g = nx.DiGraph()

@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages  # type:ignore
 
-with open("diablo/version.py", "r") as v:
+with open("juon/version.py", "r") as v:
     vers = v.read()
 exec(vers)  # nosec
 
@@ -19,7 +19,7 @@ setup(
     maintainer="Joocer",
     author="joocer",
     author_email="justin.joyce@joocer.com",
-    packages=find_packages(include=["diablo", "diablo.*"]),
-    url="https://github.com/joocer/diablo",
+    packages=find_packages(include=["juon", "juon.*"]),
+    url="https://github.com/joocer/juon",
     install_requires=required,
 )

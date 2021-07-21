@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from diablo import Graph
+from juon import Graph
 from graph_data import build_graph, graph_is_as_expected
 
 def test_graph():

@@ -1,5 +1,5 @@
 """
-Diablo: Python Graph Library
+JuOn: Python Graph Library
 
 (C) 2021 Justin Joyce.
 
@@ -17,7 +17,7 @@ limitations under the License.
 """
 import types
 from .graph import Graph
-from .diablo import Diablo
+from .juon import JuOn
 from pathlib import Path
 try:
     import xmltodict  # type:ignore
@@ -38,21 +38,21 @@ def walk(graph, nids=None):
             the identity(s) of the node(s) to select
 
     Returns:
-        A Diablo instance
+        A JuOn instance
     """
     if nids:
         nids = _make_a_list(nids)
         if len(nids) > 0:
-            return Diablo(
+            return JuOn(
                 graph=graph,
                 active_nodes=nids)
     else:
-        return Diablo(graph, set())
+        return JuOn(graph, set())
 
 
 def read_graphml(graphml_file: str):
     """
-    Load a GraphML file into a Diablo Graph
+    Load a GraphML file into a JuOn Graph
 
     Parameters:
         graphml_file: string
@@ -122,7 +122,7 @@ def _load_edge_file(path: Path):
 
 def load(path: str):
     """
-    Load a saved Diablo graph.
+    Load a saved JuOn graph.
 
     Parameters:
         path: string
