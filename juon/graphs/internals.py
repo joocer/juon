@@ -52,9 +52,9 @@ def walk(graph, nids=None):
     if nids:
         nids = _make_a_list(nids)
         if len(nids) > 0:
-            return Traverse(graph=graph, active_nodes=nids)
+            return GraphTraversal(graph=graph, active_nodes=nids)
     else:
-        return Traverse(graph, set())
+        return GraphTraversal(graph, set())
 
 
 def read_graphml(graphml_file: str):
