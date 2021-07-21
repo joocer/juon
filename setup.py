@@ -11,7 +11,7 @@ with open("requirements.txt") as f:
     required = f.read().splitlines()
 
 setup(
-    name="diablo",
+    name="juon",
     version=__version__,
     description="Python Graph Library",
     long_description=long_description,
