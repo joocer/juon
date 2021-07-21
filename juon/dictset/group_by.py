@@ -1,5 +1,5 @@
 from typing import Callable, Iterator
-from mabel.data.formats import dictset as ds
+from juon import dictset as ds
 
 
 class Groups:
