@@ -19,14 +19,7 @@ import types
 from .graph import Graph
 from .graph_traversal import GraphTraversal
 from pathlib import Path
-try:
-    import xmltodict  # type:ignore
-except ImportError:
-    pass
-try:
-    import orjson as json
-except ImportError:
-    import ujson as json  # type:ignore
+from ..utils import json, xml_parse
 
 
 def walk(graph, nids=None):
@@ -62,7 +55,7 @@ def read_graphml(graphml_file: str):
         Graph
     """
     with open(graphml_file, 'r') as fd:
-        xml_dom = xmltodict.parse(fd.read())
+        xml_dom = xml_parse.parse(fd.read())
 
     g = Graph()
 
@@ -103,7 +96,7 @@ def _load_node_file(path: Path):
     nodes = []
     with open(path, 'r') as node_file:
         for line in node_file:
-            node = json.loads(line)
+            node = json.parse(line)
             nodes.append((node['nid'], node['attributes'],))
     results = {n:a for n, a in nodes}
     return results
@@ -113,7 +106,7 @@ def _load_edge_file(path: Path):
     edges = []
     with open(path, 'r') as edge_file:
         for line in edge_file:
-            node = json.loads(line)
+            node = json.parse(line)
             edges.append((node['source'], node['target'], node['relationship'],))
     results:dict = {s:[] for s, t, r in edges}
     for s, t, r in edges:
