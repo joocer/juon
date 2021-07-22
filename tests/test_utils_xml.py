@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 from rich import traceback
-from juon.utils import xml_parse
+from juon import xmler
 
 traceback.install()
 
@@ -20,7 +20,7 @@ T = """<mydocument has="an attribute">
 </mydocument>"""
 
 def test_xml_parse():
-  doc = xml_parse.parse(T)
+  doc = xmler.parse(T)
   print(doc)
   assert doc['mydocument']['@has'] == u'an attribute'
   assert doc['mydocument']['and']['many'] == [u'elements', u'more elements']

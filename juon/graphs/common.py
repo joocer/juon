@@ -19,7 +19,7 @@ import types
 from .graph import Graph
 from .graph_traversal import GraphTraversal
 from pathlib import Path
-from ..utils import json, xml_parse
+from .. import json, xmler
 
 
 def walk(graph, nids=None):
@@ -55,7 +55,7 @@ def read_graphml(graphml_file: str):
         Graph
     """
     with open(graphml_file, 'r') as fd:
-        xml_dom = xml_parse.parse(fd.read())
+        xml_dom = xmler.parse(fd.read())
 
     g = Graph()
 

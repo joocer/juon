@@ -9,7 +9,7 @@ into structures like Pandas.
 from typing import Iterator, Any, List, Callable
 from .group_by import Groups
 from .records import select_record_fields, set_value, order
-from ..utils.json import serialize, parse
+from .. import json
 
 
 INNER_JOIN = "INNER"
@@ -165,7 +165,7 @@ def drop_duplicates(dictset: Iterator[dict], cache_size: int = 10000):
     lru = LruIndex(size=cache_size)
 
     for record in dictset:
-        entry = serialize(record)
+        entry = json.serialize(record)
         if lru.test(entry):
             continue
         yield record
@@ -210,7 +210,7 @@ def dictsets_match(dictset_1: Iterator[dict], dictset_2: Iterator[dict]):
     def _hash_set(dictset: Iterator[dict]):
         xor = 0
         for record in dictset:
-            entry = serialize(record)  # type:ignore
+            entry = json.serialize(record)  # type:ignore
             _hash = hash(entry)
             xor = xor ^ _hash
         return xor
@@ -365,7 +365,7 @@ def jsonify(list_of_json_strings: Iterator[dict]):
     Yields:
         dictionary
     """
-    return map(parse, list_of_json_strings)  # type:ignore
+    return map(json.parse, list_of_json_strings)  # type:ignore
 
 
 def pass_thru_counter(dictset: Iterator[dict]):

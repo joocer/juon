@@ -21,8 +21,7 @@ from pathlib import Path
 from .graph import Graph
 from pydantic import BaseModel
 from .graph_traversal import GraphTraversal
-from ..utils.json import parse, serialize
-from ..utils import xml_parse
+from .. import json, xmler
 
 
 class EdgeModel(BaseModel):
@@ -70,15 +69,13 @@ def read_graphml(graphml_file: str):
     """
 
     with open(graphml_file, "r") as fd:
-        xml_dom = xml_parse.parse(fd.read())
+        xml_dom = xmler.parse(fd.read())
 
     g = Graph()
 
     # load the keys
     keys = {}
-#    print(xml_dom)
-#    print('\n\n', serialize(xml_dom), '\n\n')
-#    print(xml_dom.get('key'))
+
     for key in xml_dom["graphml"].get("key", {}):
         keys[key["@id"]] = key["@attr.name"]
 
@@ -114,7 +111,7 @@ def _load_node_file(path: Path):
     nodes = []
     with open(path, "r", encoding="utf8") as node_file:
         for line in node_file:
-            node = parse(line)
+            node = json.parse(line)
             nodes.append(
                 (
                     node["nid"],
@@ -130,7 +127,7 @@ def _load_edge_file(path: Path):
     edges = []
     with open(path, "r", encoding="utf8") as edge_file:
         for line in edge_file:
-            node = parse(line)
+            node = json.parse(line)
             edges.append(
                 (
                     node["source"],

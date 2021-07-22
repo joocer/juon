@@ -10,7 +10,7 @@ import os
 import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
-from juon.utils.json import parse, serialize
+from juon import json
 from rich import traceback
 
 traceback.install()
@@ -43,7 +43,7 @@ def test_json_serialization():
     failed = False
 
     try:
-        b = serialize(will_normally_fail)
+        b = json.serialize(will_normally_fail)
     except:  # pragma: no cover
         failed = True
 
@@ -53,9 +53,9 @@ def test_json_serialization():
 
 def test_json_serialization_multiline():
 
-    explicit_no_indent = serialize(is_okay, indent=False)
-    implicit_no_indent = serialize(is_okay)
-    explicit_indent = serialize(is_okay, indent=True)
+    explicit_no_indent = json.serialize(is_okay, indent=False)
+    implicit_no_indent = json.serialize(is_okay)
+    explicit_indent = json.serialize(is_okay, indent=True)
 
     assert implicit_no_indent == explicit_no_indent
     assert explicit_no_indent != explicit_indent
@@ -66,7 +66,7 @@ def test_json_serialization_multiline():
 
 def test_json_parsing():
 
-    obj = parse(json_string)
+    obj = json.parse(json_string)
 
     assert obj.get("is_true") == False
     assert obj.get("list") == ["item"]
