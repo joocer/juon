@@ -1,6 +1,7 @@
 def get_size(obj, seen=None):
     """Recursively finds size of objects"""
     import sys
+
     size = sys.getsizeof(obj)
     if seen is None:
         seen = set()
@@ -13,10 +14,10 @@ def get_size(obj, seen=None):
     if isinstance(obj, dict):
         size += sum([get_size(v, seen) for v in obj.values()])
         size += sum([get_size(k, seen) for k in obj.keys()])
-    elif hasattr(obj, '__dict__'):
+    elif hasattr(obj, "__dict__"):
         size += get_size(obj.__dict__, seen)
-    elif hasattr(obj, '__slots__'):
+    elif hasattr(obj, "__slots__"):
         size += sum([get_size(getattr(obj, k), seen) for k in obj.__slots__])
-    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+    elif hasattr(obj, "__iter__") and not isinstance(obj, (str, bytes, bytearray)):
         size += sum([get_size(i, seen) for i in obj])
     return size
