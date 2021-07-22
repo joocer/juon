@@ -75,7 +75,6 @@ def read_graphml(graphml_file: str):
 
     # load the keys
     keys = {}
-
     for key in xml_dom["graphml"].get("key", {}):
         keys[key["@id"]] = key["@attr.name"]
 

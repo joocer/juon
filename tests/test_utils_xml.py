@@ -22,7 +22,6 @@ T = """<mydocument has="an attribute">
 
 def test_xml_parse():
     doc = xmler.parse(T)
-    print(doc)
     assert doc["mydocument"]["@has"] == u"an attribute"
     assert doc["mydocument"]["and"]["many"] == [u"elements", u"more elements"]
     assert doc["mydocument"]["plus"]["@a"] == u"complex"
