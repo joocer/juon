@@ -4,6 +4,10 @@ import sys
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 from juon import Graph
 from data.graph_data import build_graph, graph_is_as_expected
+from juon import graphs
+from rich import traceback
+
+traceback.install()
 
 
 def test_graph():
@@ -63,7 +67,7 @@ def test_bfs():
     assert len(bfs) == 14
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
 
     test_graph()
     test_outgoing_edges()

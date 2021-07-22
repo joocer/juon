@@ -3,8 +3,11 @@ import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 from juon import Graph
-from juon.graphs import walk
 from data.graph_data import build_graph, graph_is_as_expected
+from juon.graphs import walk
+from rich import traceback
+
+traceback.install()
 
 
 def test_traversal():
@@ -41,7 +44,7 @@ def test_traversal():
     }
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
 
     test_traversal()
 

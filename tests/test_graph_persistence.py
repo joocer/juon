@@ -3,14 +3,17 @@ import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 from juon import Graph
-from juon import graphs
 from data.graph_data import build_graph, graph_is_as_expected
+from juon import graphs
 import shutil
 from pathlib import Path
+from rich import traceback
+
+traceback.install()
 
 
 def test_save_graph():
-    # test the save and read of juon native graphs
+    # test the save and read of diablo native graphs
 
     TEST_FOLDER = "TEST_PERISTENCE"
 
@@ -43,10 +46,10 @@ def test_read_graphml():
     graph_is_as_expected(graph)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
 
+    test_read_graphml()
     test_save_graph()
     test_networkx()
-    test_read_graphml()
 
     print("okay")
