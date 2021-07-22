@@ -1,4 +1,4 @@
-<img src="assets/diablo.png">
+<img src="icon.svg" height=82px>
 
-# diablo
+# JuOn
 Python Graph Library

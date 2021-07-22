@@ -1,5 +1,5 @@
 """
-Diablo: Python Graph Library
+JuOn: Python Graph Library
 
 (C) 2021 Justin Joyce.
 
@@ -17,7 +17,7 @@ limitations under the License.
 """
 from typing import Callable
 
-class Diablo():
+class JuOn():
 
     __slots__ = ('graph', '_active_nodes', '_active_nodes_cache')
 
@@ -26,7 +26,7 @@ class Diablo():
             graph,
             active_nodes: set = set()):
         """
-        Diablo: Graph Traversal
+        JuOn: Graph Traversal
 
         Parameters:
             graph: Graph
@@ -53,13 +53,13 @@ class Diablo():
                 traverses node following edges with the stated relationship
         
         Returns:
-            Diablo
+            JuOn
         """
         active_nodes = []
 
         for node in self._active_nodes:
             active_nodes += [t for (s, t, r) in self.graph.outgoing_edges(node) if r in relationships]
-        return Diablo(
+        return JuOn(
             graph=self.graph,
             active_nodes=active_nodes)
 
@@ -72,10 +72,10 @@ class Diablo():
                 node attribute name to filter on
 
         Returns: 
-            Diablo
+            JuOn
         """
         active_nodes = {nid for nid, attrib in self.active_nodes(data=True) if filter(attrib)}
-        return Diablo(
+        return JuOn(
             graph=self.graph,
             active_nodes=active_nodes)
 
@@ -84,7 +84,7 @@ class Diablo():
         Filters the active nodes by a key/value match
         """
         active_nodes = [nid for nid, attrib in self.active_nodes(data=True) if attrib.get(key) == value]
-        return Diablo(
+        return JuOn(
             graph=self.graph,
             active_nodes=active_nodes)
 

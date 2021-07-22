@@ -1,5 +1,5 @@
 """
-Diablo: Python Graph Library
+JuOn: Python Graph Library
 
 (C) 2021 Justin Joyce.
 
@@ -17,16 +17,9 @@ limitations under the License.
 """
 import types
 from .graph import Graph
-from .diablo import Diablo
+from .graph_traversal import GraphTraversal
 from pathlib import Path
-try:
-    import xmltodict  # type:ignore
-except ImportError:
-    pass
-try:
-    import orjson as json
-except ImportError:
-    import ujson as json  # type:ignore
+from .. import json, xmler
 
 
 def walk(graph, nids=None):
@@ -38,21 +31,21 @@ def walk(graph, nids=None):
             the identity(s) of the node(s) to select
 
     Returns:
-        A Diablo instance
+        A JuOn instance
     """
     if nids:
         nids = _make_a_list(nids)
         if len(nids) > 0:
-            return Diablo(
+            return GraphTraversal(
                 graph=graph,
                 active_nodes=nids)
     else:
-        return Diablo(graph, set())
+        return GraphTraversal(graph, set())
 
 
 def read_graphml(graphml_file: str):
     """
-    Load a GraphML file into a Diablo Graph
+    Load a GraphML file into a JuOn Graph
 
     Parameters:
         graphml_file: string
@@ -62,7 +55,7 @@ def read_graphml(graphml_file: str):
         Graph
     """
     with open(graphml_file, 'r') as fd:
-        xml_dom = xmltodict.parse(fd.read())
+        xml_dom = xmler.parse(fd.read())
 
     g = Graph()
 
@@ -103,7 +96,7 @@ def _load_node_file(path: Path):
     nodes = []
     with open(path, 'r') as node_file:
         for line in node_file:
-            node = json.loads(line)
+            node = json.parse(line)
             nodes.append((node['nid'], node['attributes'],))
     results = {n:a for n, a in nodes}
     return results
@@ -113,7 +106,7 @@ def _load_edge_file(path: Path):
     edges = []
     with open(path, 'r') as edge_file:
         for line in edge_file:
-            node = json.loads(line)
+            node = json.parse(line)
             edges.append((node['source'], node['target'], node['relationship'],))
     results:dict = {s:[] for s, t, r in edges}
     for s, t, r in edges:
@@ -122,7 +115,7 @@ def _load_edge_file(path: Path):
 
 def load(path: str):
     """
-    Load a saved Diablo graph.
+    Load a saved JuOn graph.
 
     Parameters:
         path: string

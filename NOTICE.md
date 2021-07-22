@@ -46,6 +46,6 @@ Ezzeri Esa (original author).
 
 
 
-**DIABLO ICON IS FROM**
+**JUON ICON IS FROM**
 
 https://gitlab.com/gillian.perard/gillicons
