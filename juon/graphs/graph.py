@@ -1,5 +1,5 @@
 """
-Diablo: Python Graph Library
+Python Graph Library
 
 (C) 2021 Justin Joyce.
 

@@ -1,5 +1,4 @@
 types-orjson
-types-ujson
 rich
 networkx
 pandas

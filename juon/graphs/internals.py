@@ -1,5 +1,5 @@
 """
-Diablo: Python Graph Library
+Python Graph Library
 
 (C) 2021 Justin Joyce.
 
@@ -18,8 +18,8 @@ limitations under the License.
 
 import types
 from pathlib import Path
-from .graph import Graph
 from pydantic import BaseModel
+from .graph import Graph
 from .graph_traversal import GraphTraversal
 from .. import json, xmler
 
@@ -75,6 +75,7 @@ def read_graphml(graphml_file: str):
 
     # load the keys
     keys = {}
+
     for key in xml_dom["graphml"].get("key", {}):
         keys[key["@id"]] = key["@attr.name"]
 

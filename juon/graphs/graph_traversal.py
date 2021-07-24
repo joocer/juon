@@ -1,5 +1,5 @@
 """
-Diablo: Python Graph Library
+Python Graph Library
 
 (C) 2021 Justin Joyce.
 
@@ -22,7 +22,7 @@ class GraphTraversal:
 
     __slots__ = ("graph", "_active_nodes", "_active_nodes_cache")
 
-    def __init__(self, graph, active_nodes: set = None):
+    def __init__(self, graph, active_nodes: set = set()):
         """
         Graph Traversal
 
@@ -53,7 +53,7 @@ class GraphTraversal:
                 traverses node following edges with the stated relationship
 
         Returns:
-            Diablo
+            GraphTraversal
         """
         active_nodes = []
 
@@ -72,7 +72,7 @@ class GraphTraversal:
                 node attribute name to filter on
 
         Returns:
-            Diablo
+            GraphTraversal
         """
         active_nodes = {
             nid for nid, attrib in self.active_nodes(data=True) if filter(attrib)

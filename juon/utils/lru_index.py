@@ -24,18 +24,16 @@ class LruIndex(object):
     def test(self, item: Any):
         # this offers a minor performance improvement
         hash_list = self.hash_list
-        # pop() will remove the item if it's in the dict
-        # we return a default of False
+        # pop() will remove the item if it's in the dict we return a default of False
         if hash_list.pop(item, False):
             hash_list[item] = True
             return True
         # add the item to the top of the dict
         hash_list[item] = True
         if len(hash_list) == self.size:
-            # we want to remove the first item in the dict
-            # we could convert to a list, but then we need
-            # to create a list, this is much faster and
-            # uses less memory
+            # we want to remove the first item in the dict we could convert to a list,
+            # but then we need to create a list, this is much faster and uses less
+            # memory
             # deepcode ignore unguarded~next~call: will not error
             hash_list.pop(next(iter(hash_list)))
         return False

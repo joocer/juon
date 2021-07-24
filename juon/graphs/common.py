@@ -16,9 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import types
+from pathlib import Path
 from .graph import Graph
 from .graph_traversal import GraphTraversal
-from pathlib import Path
 from .. import json, xmler
 
 
