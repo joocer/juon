@@ -1,35 +1,11 @@
 <img src="icon.png" height=82px>
 
 ### Seren
-_Python Data Library_
+_Python Graph Library_
 
 ----
 
-Graphs
-Graph Traversal
-Lists of Dictionaries (dictsets)
-JSON
-XML
+Seren is a imited feature-set, low-memory, traversal optimized Directed Graph structure.
 
-## Graphs
+## Documentation
 
-Limited feature-set, low-memory, traversal optimized Directed Graph structure.
-
-## Graph Traversal
-
-High performance graph traversal.
-
-## Lists of Dictionaries (dictsets)
-
-Routines to process lists of dictionaries, most are able to support Python
-generators without exhausting them.
-
-Includes grouping and display helpers.
-
-## JSON
-
-A wrapper around orjson.
-
-## XML
-
-Performant XML to Python Dictionary

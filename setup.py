@@ -27,10 +27,6 @@ setup(
     install_requires=required,
     ext_modules=cythonize(
         [
-            "seren/dictset/dictset.py",
-            "seren/dictset/display.py",
-            "seren/dictset/group_by.py",
-            "seren/dictset/records.py",
             "seren/graphs/common.py",
             "seren/graphs/graph_traversal.py",
             "seren/graphs/graph.py",

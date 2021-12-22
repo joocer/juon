@@ -1,5 +1,5 @@
 """
-Python Graph Library
+Seren: Python Graph Library
 
 (C) 2021 Justin Joyce.
 
@@ -158,7 +158,7 @@ class Graph(object):
         Returns:
         """
         # This uses a variation of the algorith used by NetworkX optimized for
-        # the Diablo data structures.
+        # the Seren data structures.
         #
         # https://networkx.org/documentation/networkx-1.10/_modules/networkx/algorithms/traversal/breadth_first_search.html#bfs_tree
 

@@ -1,5 +1,5 @@
 """
-Python Graph Library
+Seren: Python Graph Library
 
 (C) 2021 Justin Joyce.
 
