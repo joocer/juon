@@ -10,7 +10,7 @@ import os
 import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
-from juon import json
+from seren import json
 from rich import traceback
 
 traceback.install()

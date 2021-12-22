@@ -2,8 +2,8 @@ import os
 import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
-from juon import Graph
-from juon import graphs
+from seren import Graph
+from seren import graphs
 from data.graph_data import build_graph, graph_is_as_expected
 import shutil
 from pathlib import Path

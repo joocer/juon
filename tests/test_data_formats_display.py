@@ -3,7 +3,7 @@ import sys
 import os
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
-from juon.dictset import display
+from seren.dictset import display
 from rich import traceback
 
 traceback.install()
