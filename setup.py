@@ -1,6 +1,9 @@
-from setuptools import setup, find_packages  # type:ignore
+# python setup.py build_ext --inplace
 
-with open("juon/version.py", "r") as v:
+from setuptools import setup, find_packages  # type:ignore
+from Cython.Build import cythonize
+
+with open("seren/version.py", "r") as v:
     vers = v.read()
 exec(vers)  # nosec
 
@@ -11,7 +14,7 @@ with open("requirements.txt") as f:
     required = f.read().splitlines()
 
 setup(
-    name="juon",
+    name="seren",
     version=__version__,
     description="Python Graph Library",
     long_description=long_description,
@@ -19,7 +22,19 @@ setup(
     maintainer="Joocer",
     author="joocer",
     author_email="justin.joyce@joocer.com",
-    packages=find_packages(include=["juon", "juon.*"]),
-    url="https://github.com/joocer/juon",
+    packages=find_packages(include=["seren", "seren.*"]),
+    url="https://github.com/joocer/seren",
     install_requires=required,
+    ext_modules=cythonize(
+        [
+            "seren/dictset/dictset.py",
+            "seren/dictset/display.py",
+            "seren/dictset/group_by.py",
+            "seren/dictset/records.py",
+            "seren/graphs/common.py",
+            "seren/graphs/graph_traversal.py",
+            "seren/graphs/graph.py",
+            "seren/graphs/internals.py",
+        ]
+    ),
 )
