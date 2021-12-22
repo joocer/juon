@@ -1,6 +1,6 @@
-<img src="icon.svg" height=82px>
+<img src="icon.png" height=82px>
 
-### JuOn
+### Seren
 _Python Data Library_
 
 ----
