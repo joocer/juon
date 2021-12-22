@@ -1,22 +1,23 @@
+# Handling Graphs
 
-# Building a Graph
+## Building a Graph
 
-## add_node
+### add_node
 
-## add_edge
+### add_edge
 
-# Loading a saved Graph
+## Loading a saved Graph
 
-## read_graphml
+### read_graphml
 
-## load
+### load
 
-# Saving a Graph
+## Saving a Graph
 
-## save
+### save
 
-# Converting a Graph
+## Converting a Graph
 
-## to_networkx
+### to_networkx
 
-## epitomize
+### epitomize

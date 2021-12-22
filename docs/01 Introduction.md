@@ -1,3 +1,2 @@
-
-## Graph Basics
+# Graph Basics
 

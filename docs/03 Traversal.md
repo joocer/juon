@@ -1,18 +1,19 @@
+# Graph Traversal
 
-# Nagivating Graphs
+## Nagivating Graphs
 
-## walk
+### walk
 
-## follow
+### follow
 
-## select
+### select
 
-## has
+### has
 
-# Navigation Results
+## Navigation Results
 
-## values
+### values
 
-## active_nodes
+### active_nodes
 
-## list_relationships
+### list_relationships
