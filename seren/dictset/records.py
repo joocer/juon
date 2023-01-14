@@ -57,7 +57,9 @@ def set_value(record: dict, field_name: str, setter: Callable) -> dict:
 
 
 import collections
-def flatten(dictionary, parent_key=False, separator='.'):
+
+
+def flatten(dictionary, parent_key=False, separator="."):
     """
     Turn a nested dictionary into a flattened dictionary
     :param dictionary: The dictionary to flatten

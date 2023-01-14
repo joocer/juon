@@ -19,9 +19,9 @@ limitations under the License.
 import types
 from pathlib import Path
 from pydantic import BaseModel
-from .graph import Graph
-from .graph_traversal import GraphTraversal
-from .. import json, xmler
+from seren.graphs.graph import Graph
+from seren.graphs.graph_traversal import GraphTraversal
+from seren import xmler
 
 
 class EdgeModel(BaseModel):

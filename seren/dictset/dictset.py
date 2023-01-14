@@ -6,7 +6,7 @@ A group of functions to assist with handling lists of dictionaries. Intended
 to be used for simple operations or pre-filtering and selection before loading
 into structures like Pandas.
 """
-from typing import Iterator, List, Callable
+from typing import Iterator, List, Callable, Optional
 
 import orjson
 
@@ -92,7 +92,9 @@ def create_index(dictset: Iterator[dict], index_column: str) -> dict:
 
 
 def select_from(
-    dictset: Iterator[dict], columns: List[str] = ["*"], where: Callable = None
+    dictset: Iterator[dict],
+    columns: List[str] = ["*"],
+    where: Optional[Callable] = None,
 ) -> Iterator[dict]:
     """
     Scan a dictset, filtering rows and selecting columns.
@@ -387,4 +389,3 @@ def pass_thru_counter(dictset: Iterator[dict]):
     for counter, record in enumerate(dictset):
         yield record
     raise Exception(counter + 1)
-

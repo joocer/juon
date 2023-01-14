@@ -19,6 +19,8 @@ import types
 
 from pathlib import Path
 
+import orjson
+
 from seren import xmler
 from seren.graphs.graph import Graph
 from seren.graphs.graph_traversal import GraphTraversal
@@ -96,7 +98,7 @@ def _load_node_file(path: Path):
     nodes = []
     with open(path, "r") as node_file:
         for line in node_file:
-            node = json.parse(line)
+            node = orjson.loads(line)
             nodes.append(
                 (
                     node["nid"],
@@ -112,7 +114,7 @@ def _load_edge_file(path: Path):
     edges = []
     with open(path, "r") as edge_file:
         for line in edge_file:
-            node = json.parse(line)
+            node = orjson.loads(line)
             edges.append(
                 (
                     node["source"],

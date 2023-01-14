@@ -275,7 +275,7 @@ class Graph(object):
         )
         return sorted(retval)
 
-    def remove_node(self, nid, heal:bool = False):
+    def remove_node(self, nid, heal: bool = False):
         """
         Remove a node.
 
@@ -290,11 +290,11 @@ class Graph(object):
 
         if heal:
             # link the nodes each side of the node being removed
-            out_going = self.get_outgoing_links(nid)
-            in_coming = self.get_incoming_links(nid)
+            out_going = self.outgoing_edges(nid)
+            in_coming = self.ingoing_edges(nid)
             for out_nid in out_going:
                 for in_nid in in_coming:
-                    self.link_operators(in_nid[0], out_nid, in_nid[1])
+                    self.add_edge(in_nid[0], out_nid, in_nid[1])
 
             self._edges = [
                 (source, target, direction)
@@ -312,7 +312,7 @@ class Graph(object):
             for source, target, direction in self._edges
         ]
         # add an edge from the new nid to the old one
-        self.link_operators(nid, before_nid)
+        self.add_edge(nid, before_nid)
 
     def insert_node_after(self, nid, operator, after_nid):
         """rewrite the plan putting the new node after a given node"""
@@ -324,7 +324,7 @@ class Graph(object):
             for source, target, direction in self._edges
         ]
         # add an edge from the new nid to the old one
-        self.link_operators(after_nid, nid)
+        self.add_edge(after_nid, nid)
 
     def copy(self):
         g = Graph()

@@ -20,5 +20,6 @@ limitations under the License.
 class MissingDependencyError(Exception):
     pass
 
+
 class NodeNotFoundError(Exception):
     pass
