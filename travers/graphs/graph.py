@@ -64,16 +64,14 @@ class Graph(object):
         path = Path(graph_path)
         path.mkdir(exist_ok=True)
 
-        from .internals import EdgeModel, NodeModel
-
-        with open(path / "edges.jsonl", "w", encoding="utf8") as edge_file:
+        with open(path / "edges.jsonl", "wb") as edge_file:
             for source, target, relationship in self.edges():
-                edge_record = EdgeModel(
-                    source=source,
-                    target=target,
-                    relationship=relationship,
-                )
-                edge_file.write(edge_record.json() + "\n")
+                edge_record = {
+                    "source": source,
+                    "target": target,
+                    "relationship": relationship,
+                }
+                edge_file.write(orjson.dumps(edge_record) + b"\n")
         with open(path / "nodes.jsonl", "wb") as node_file:
             for nid, attr in self.nodes(data=True):
                 node_file.write(orjson.dumps({"nid": nid, "attributes": attr}) + b"\n")
