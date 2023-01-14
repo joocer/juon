@@ -18,4 +18,4 @@ limitations under the License.
 
 from travers.graphs.graph import Graph
 from travers.graphs.internals import load, read_graphml
-from travers.version import __version__
+from travers.version import __author__, __version__
