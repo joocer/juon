@@ -74,9 +74,9 @@ class Graph(object):
                     relationship=relationship,
                 )
                 edge_file.write(edge_record.json() + "\n")
-        with open(path / "nodes.jsonl", "w", encoding="utf8") as node_file:
+        with open(path / "nodes.jsonl", "wb") as node_file:
             for nid, attr in self.nodes(data=True):
-                node_file.write(json.serialize({"nid": nid, "attributes": attr}) + "\n")
+                node_file.write(orjson.dumps({"nid": nid, "attributes": attr}) + b"\n")
 
     def add_edge(self, source: str, target: str, relationship: str):
         """
