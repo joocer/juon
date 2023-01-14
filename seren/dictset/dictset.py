@@ -7,9 +7,11 @@ to be used for simple operations or pre-filtering and selection before loading
 into structures like Pandas.
 """
 from typing import Iterator, List, Callable
+
+import orjson
+
 from .group_by import Groups
 from .records import select_record_fields, set_value
-from .. import json
 
 
 INNER_JOIN = "INNER"
@@ -165,7 +167,7 @@ def drop_duplicates(dictset: Iterator[dict], cache_size: int = 10000):
     lru = LruIndex(size=cache_size)
 
     for record in dictset:
-        entry = json.serialize(record)
+        entry = orjson.dumps(record)
         if lru.test(entry):
             continue
         yield record
@@ -210,7 +212,7 @@ def dictsets_match(dictset_1: Iterator[dict], dictset_2: Iterator[dict]):
     def _hash_set(dictset: Iterator[dict]):
         xor = 0
         for record in dictset:
-            entry = json.serialize(record)  # type:ignore
+            entry = orjson.dumps(record)  # type:ignore
             _hash = hash(entry)
             xor = xor ^ _hash
         return xor
@@ -365,7 +367,7 @@ def jsonify(list_of_json_strings: Iterator[dict]):
     Yields:
         dictionary
     """
-    return map(json.parse, list_of_json_strings)  # type:ignore
+    return map(orjson.loads, list_of_json_strings)  # type:ignore
 
 
 def pass_thru_counter(dictset: Iterator[dict]):
