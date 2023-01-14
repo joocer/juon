@@ -1,4 +1,11 @@
-<img src="icon.svg" height=82px>
+<img src="icon.png" height=82px>
 
-# JuOn
-Python Graph Library
+### Seren
+_Python Graph Library_
+
+----
+
+Seren is a limited feature-set, low-memory, traversal optimized Directed Graph structure.
+
+## Documentation
+

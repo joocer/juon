@@ -1,7 +1,7 @@
 """
-JuOn: Python Graph Library
+Seren
 
-(C) 2021 Justin Joyce.
+(C) 2023 Justin Joyce.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@ limitations under the License.
 from typing import Callable
 
 
-class JuOn:
+class GraphTraversal:
 
     __slots__ = ("graph", "_active_nodes", "_active_nodes_cache")
 
     def __init__(self, graph, active_nodes: set = set()):
         """
-        JuOn: Graph Traversal
+        Graph Traversal
 
         Parameters:
             graph: Graph
@@ -36,7 +36,9 @@ class JuOn:
         # ensure it is a set
         # - the collection active nodes is immutable
         # - sets are faster for look ups
-        if type(active_nodes).__name__ == "set":
+        if not active_nodes:
+            self._active_nodes = set()
+        elif type(active_nodes).__name__ == "set":
             self._active_nodes = active_nodes
         else:
             self._active_nodes = set(active_nodes)
@@ -51,7 +53,7 @@ class JuOn:
                 traverses node following edges with the stated relationship
 
         Returns:
-            JuOn
+            GraphTraversal
         """
         active_nodes = []
 
@@ -59,7 +61,7 @@ class JuOn:
             active_nodes += [
                 t for (s, t, r) in self.graph.outgoing_edges(node) if r in relationships
             ]
-        return JuOn(graph=self.graph, active_nodes=active_nodes)
+        return GraphTraversal(graph=self.graph, active_nodes=active_nodes)
 
     def select(self, filter: Callable):
         """
@@ -70,12 +72,12 @@ class JuOn:
                 node attribute name to filter on
 
         Returns:
-            JuOn
+            GraphTraversal
         """
         active_nodes = {
             nid for nid, attrib in self.active_nodes(data=True) if filter(attrib)
         }
-        return JuOn(graph=self.graph, active_nodes=active_nodes)
+        return GraphTraversal(graph=self.graph, active_nodes=active_nodes)
 
     def has(self, key, value):
         """
@@ -86,7 +88,7 @@ class JuOn:
             for nid, attrib in self.active_nodes(data=True)
             if attrib.get(key) == value
         ]
-        return JuOn(graph=self.graph, active_nodes=active_nodes)
+        return GraphTraversal(graph=self.graph, active_nodes=active_nodes)
 
     def values(self, key):
         return list(
@@ -112,8 +114,8 @@ class JuOn:
             relationships += {r for (s, t, r) in self.graph.outgoing_edges(node)}
         return set(relationships)
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no-cover
         return f"Graph - {len(list(self.graph.nodes()))} nodes ({len(self._active_nodes)} selected), {len(list(self.graph.edges()))} edges"
 
-    def __len__(self):
+    def __len__(self):  # pragma: no-cover
         return len(self._active_nodes)

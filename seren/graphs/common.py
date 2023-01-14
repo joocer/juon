@@ -1,7 +1,7 @@
 """
-Diablo: Python Graph Library
+Seren
 
-(C) 2021 Justin Joyce.
+(C) 2023 Justin Joyce.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,26 +15,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
 import types
+
 from pathlib import Path
-from .graph import Graph
-from pydantic import BaseModel
-from .graph_traversal import GraphTraversal
-from .. import json, xmler
 
+import orjson
 
-class EdgeModel(BaseModel):
-    source: str
-    target: str
-    relationship: str
-
-
-class NodeModel(BaseModel):
-    nid: str
-    display_name: str
-    node_type: str
-    attributes: dict = {}
+from seren import xmler
+from seren.graphs.graph import Graph
+from seren.graphs.graph_traversal import GraphTraversal
 
 
 def walk(graph, nids=None):
@@ -46,7 +35,7 @@ def walk(graph, nids=None):
             the identity(s) of the node(s) to select
 
     Returns:
-        A Diablo instance
+        A Graph instance
     """
     if nids:
         nids = _make_a_list(nids)
@@ -58,7 +47,7 @@ def walk(graph, nids=None):
 
 def read_graphml(graphml_file: str):
     """
-    Load a GraphML file into a Diablo Graph
+    Load a GraphML file into a Graph
 
     Parameters:
         graphml_file: string
@@ -67,7 +56,6 @@ def read_graphml(graphml_file: str):
     Returns:
         Graph
     """
-
     with open(graphml_file, "r") as fd:
         xml_dom = xmler.parse(fd.read())
 
@@ -86,7 +74,7 @@ def read_graphml(graphml_file: str):
         for key in g._make_a_list(node.get("data", {})):
             try:
                 data[keys[key["@key"]]] = key.get("#text", "")
-            except KeyError:
+            except:
                 skip = True
         if not skip:
             g.add_node(node["@id"], data)
@@ -108,9 +96,9 @@ def read_graphml(graphml_file: str):
 def _load_node_file(path: Path):
     """load the node information from a file"""
     nodes = []
-    with open(path, "r", encoding="utf8") as node_file:
+    with open(path, "r") as node_file:
         for line in node_file:
-            node = json.parse(line)
+            node = orjson.loads(line)
             nodes.append(
                 (
                     node["nid"],
@@ -124,9 +112,9 @@ def _load_node_file(path: Path):
 def _load_edge_file(path: Path):
     """load the edge information from a file"""
     edges = []
-    with open(path, "r", encoding="utf8") as edge_file:
+    with open(path, "r") as edge_file:
         for line in edge_file:
-            node = json.parse(line)
+            node = orjson.loads(line)
             edges.append(
                 (
                     node["source"],
@@ -147,7 +135,7 @@ def _load_edge_file(path: Path):
 
 def load(path: str):
     """
-    Load a saved Diablo graph.
+    Load a saved Graph.
 
     Parameters:
         path: string

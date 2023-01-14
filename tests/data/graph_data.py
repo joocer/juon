@@ -2,7 +2,7 @@ import os
 import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
-from juon import Graph
+from seren import Graph
 
 
 def build_graph():

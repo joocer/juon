@@ -2,11 +2,13 @@ import os
 import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
-from juon import Graph
-from juon import graphs
-from data.graph_data import build_graph, graph_is_as_expected
+
 import shutil
 from pathlib import Path
+
+import seren
+
+from data.graph_data import build_graph, graph_is_as_expected
 
 
 def test_save_graph():
@@ -22,7 +24,7 @@ def test_save_graph():
 
     del graph
 
-    g = graphs.load(TEST_FOLDER)
+    g = seren.load(TEST_FOLDER)
     graph_is_as_expected(g)
 
     if Path(TEST_FOLDER).exists():
@@ -39,7 +41,7 @@ def test_networkx():
 
 def test_read_graphml():
 
-    graph = graphs.read_graphml("tests/data/test.graphml")
+    graph = seren.read_graphml("tests/data/test.graphml")
     graph_is_as_expected(graph)
 
 

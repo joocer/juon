@@ -1,7 +1,7 @@
 """
-Diablo: Python Graph Library
+Seren
 
-(C) 2021 Justin Joyce.
+(C) 2023 Justin Joyce.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ limitations under the License.
 
 from pathlib import Path
 from typing import Iterable, Tuple
-from ..errors import MissingDependencyError
-from .. import json
+
+import orjson
+
+from seren.errors import MissingDependencyError
 
 
 class Graph(object):
@@ -34,10 +36,6 @@ class Graph(object):
     The target and the relationship are stored as a tuple, the edge dictionary
     stores lists of tuples.
 
-    Nodes are stored as a B+Tree, this gives slightly slower performance
-    than a dictionary but has a distinct advantage in that it sorts the
-    values enabling binary searching of the dataset without loading into
-    memory.
     """
 
     __slots__ = ("_nodes", "_edges")
@@ -76,9 +74,9 @@ class Graph(object):
                     relationship=relationship,
                 )
                 edge_file.write(edge_record.json() + "\n")
-        with open(path / "nodes.jsonl", "w", encoding="utf8") as node_file:
+        with open(path / "nodes.jsonl", "wb") as node_file:
             for nid, attr in self.nodes(data=True):
-                node_file.write(json.serialize({"nid": nid, "attributes": attr}) + "\n")
+                node_file.write(orjson.dumps({"nid": nid, "attributes": attr}) + b"\n")
 
     def add_edge(self, source: str, target: str, relationship: str):
         """
@@ -158,7 +156,7 @@ class Graph(object):
         Returns:
         """
         # This uses a variation of the algorith used by NetworkX optimized for
-        # the Diablo data structures.
+        # the Seren data structures.
         #
         # https://networkx.org/documentation/networkx-1.10/_modules/networkx/algorithms/traversal/breadth_first_search.html#bfs_tree
 
@@ -224,6 +222,116 @@ class Graph(object):
         """
         return [(s, t, r) for s, t, r in self.edges() if t == target]
 
+    def is_acyclic(self):
+        """
+        Test if the Graph is acyclic
+        """
+        # cycle over the graph removing a layer of exits each cycle
+        # if we have nodes but no exists, we're cyclic
+
+        # rebuild the edge information
+        my_edges = list(self.edges())
+
+        while len(my_edges) > 0:
+            # find all of the exits
+            sources = {source for source, target, direction in my_edges}
+            exits = {
+                target
+                for source, target, direction in my_edges
+                if target not in sources
+            }
+
+            if len(exits) == 0:
+                return False
+
+            # remove the exits
+            new_edges = [
+                (source, target, direction)
+                for source, target, direction in my_edges
+                if target not in exits
+            ]
+            my_edges = new_edges
+        return True
+
+    def get_entry_points(self):
+        """
+        Get nodes in the Graph with no incoming edges.
+        """
+        if len(self._nodes) == 1:
+            return list(self._nodes.keys())
+        targets = {target for source, target, direction in self.edges()}
+        retval = (
+            source
+            for source, target, direction in self.edges()
+            if source not in targets
+        )
+        return sorted(retval)
+
+    def get_exit_points(self):
+        """
+        Get nodes in the Graph with no outgoing edges.
+        """
+        if len(self._nodes) == 1:  # pragma: no cover
+            return list(self._nodes.keys())
+        sources = self._edges.keys()
+        retval = (
+            target
+            for source, target, direction in self.edges()
+            if target not in sources
+        )
+        return sorted(retval)
+
+    def remove_node(self, nid, heal: bool = False):
+        """
+        Remove a node.
+
+        Parameters:
+            heal: boolean
+                Join the incoming and outgoing connections for the removed node
+                to each other to keep the Graph intact
+        """
+
+        # remove the node
+        self._nodes.pop(nid, None)
+
+        if heal:
+            # link the nodes each side of the node being removed
+            out_going = self.outgoing_edges(nid)
+            in_coming = self.ingoing_edges(nid)
+            for out_nid in out_going:
+                for in_nid in in_coming:
+                    self.add_edge(in_nid[0], out_nid, in_nid[1])  # type:ignore
+
+            self._edges = [
+                (source, target, direction)
+                for source, target, direction in self._edges
+                if nid not in (source, target)
+            ]
+
+    def insert_node_before(self, nid, operator, before_nid):
+        """rewrite the plan putting the new node before a given node"""
+        # add the new node to the plan
+        self.add_operator(nid, operator)
+        # change all the edges that were going into the old nid to the new one
+        self._edges = [
+            (source, target if target != before_nid else nid, direction)
+            for source, target, direction in self._edges
+        ]
+        # add an edge from the new nid to the old one
+        self.add_edge(nid, before_nid)
+
+    def insert_node_after(self, nid, operator, after_nid):
+        """rewrite the plan putting the new node after a given node"""
+        # add the new node to the plan
+        self.add_operator(nid, operator)
+        # change all the edges that were coming from the old nid to the new one
+        self._edges = [
+            (source if source != after_nid else nid, target, direction)
+            for source, target, direction in self._edges
+        ]
+        # add an edge from the new nid to the old one
+        self.add_edge(after_nid, nid)
+
     def copy(self):
         g = Graph()
         g._nodes = self._nodes.copy()
@@ -232,7 +340,7 @@ class Graph(object):
 
     def to_networkx(self):
         """
-        Convert a Diablo graph to a NetworkX graph
+        Convert a Seren graph to a NetworkX graph
         """
         try:
             import networkx as nx  # type:ignore
