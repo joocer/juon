@@ -5,7 +5,7 @@ _Python Graph Library_
 
 ----
 
-Seren is a imited feature-set, low-memory, traversal optimized Directed Graph structure.
+Seren is a limited feature-set, low-memory, traversal optimized Directed Graph structure.
 
 ## Documentation
 
