@@ -20,7 +20,7 @@ jobs:
           pip install --upgrade bandit
 
       - name: Execute Test
-        run: bandit -r juon
+        run: bandit -r travers
 
   semgrep:
     runs-on: ubuntu-latest

@@ -1,11 +1,11 @@
 <img src="icon.png" height=82px>
 
-### Seren
+### travers
 _Python Graph Library_
 
 ----
 
-Seren is a limited feature-set, low-memory, traversal optimized Directed Graph structure.
+travers is a limited feature-set, low-memory, traversal optimized Directed Graph structure.
 
 ## Documentation
 

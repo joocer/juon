@@ -6,13 +6,13 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 import shutil
 from pathlib import Path
 
-import seren
+import travers
 
 from data.graph_data import build_graph, graph_is_as_expected
 
 
 def test_save_graph():
-    # test the save and read of juon native graphs
+    # test the save and read of travers native graphs
 
     TEST_FOLDER = "TEST_PERISTENCE"
 
@@ -24,7 +24,7 @@ def test_save_graph():
 
     del graph
 
-    g = seren.load(TEST_FOLDER)
+    g = travers.load(TEST_FOLDER)
     graph_is_as_expected(g)
 
     if Path(TEST_FOLDER).exists():
@@ -41,7 +41,7 @@ def test_networkx():
 
 def test_read_graphml():
 
-    graph = seren.read_graphml("tests/data/test.graphml")
+    graph = travers.read_graphml("tests/data/test.graphml")
     graph_is_as_expected(graph)
 
 

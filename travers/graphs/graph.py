@@ -1,5 +1,5 @@
 """
-Seren
+travers
 
 (C) 2023 Justin Joyce.
 
@@ -21,7 +21,7 @@ from typing import Iterable, Tuple
 
 import orjson
 
-from seren.errors import MissingDependencyError
+from travers.errors import MissingDependencyError
 
 
 class Graph(object):
@@ -156,7 +156,7 @@ class Graph(object):
         Returns:
         """
         # This uses a variation of the algorith used by NetworkX optimized for
-        # the Seren data structures.
+        # the travers data structures.
         #
         # https://networkx.org/documentation/networkx-1.10/_modules/networkx/algorithms/traversal/breadth_first_search.html#bfs_tree
 
@@ -340,7 +340,7 @@ class Graph(object):
 
     def to_networkx(self):
         """
-        Convert a Seren graph to a NetworkX graph
+        Convert a travers graph to a NetworkX graph
         """
         try:
             import networkx as nx  # type:ignore

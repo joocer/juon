@@ -6,7 +6,7 @@ import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
-from seren import Graph
+from travers import Graph
 
 
 def test_dag_checks():
