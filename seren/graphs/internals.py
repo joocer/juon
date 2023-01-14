@@ -18,6 +18,7 @@ limitations under the License.
 
 import types
 from pathlib import Path
+import orjson
 from pydantic import BaseModel
 from seren.graphs.graph import Graph
 from seren.graphs.graph_traversal import GraphTraversal

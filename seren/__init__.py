@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from seren.version import __version__
-from seren.graphs.graph import Graph
 from seren.dictset import dictset
+from seren.dictset import records
+from seren.graphs.graph import Graph
+from seren.version import __version__

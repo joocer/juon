@@ -2,7 +2,7 @@ import sys
 import os
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
-from seren import dictset
+from seren import dictset, records
 from rich import traceback
 
 traceback.install()
@@ -19,7 +19,7 @@ def test_select_record_fields():
 
 def test_order():
     dict_record = {"c": 3, "a": 1, "b": 2}
-    ordered_dict = dictset.order(dict_record)
+    ordered_dict = records.order(dict_record)
 
     assert ordered_dict == {"a": 1, "b": 2, "c": 3}
 
