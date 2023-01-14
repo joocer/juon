@@ -228,7 +228,9 @@ class Graph(object):
         """
         # cycle over the graph removing a layer of exits each cycle
         # if we have nodes but no exists, we're cyclic
-        my_edges = self._edges.copy()
+
+        # rebuild the edge information
+        my_edges = list(self.edges())
 
         while len(my_edges) > 0:
             # find all of the exits
@@ -257,9 +259,11 @@ class Graph(object):
         """
         if len(self._nodes) == 1:
             return list(self._nodes.keys())
-        targets = {target for source, target, direction in self._edges}
+        targets = {target for source, target, direction in self.edges()}
         retval = (
-            source for source, target, direction in self._edges if source not in targets
+            source
+            for source, target, direction in self.edges()
+            if source not in targets
         )
         return sorted(retval)
 
@@ -269,9 +273,11 @@ class Graph(object):
         """
         if len(self._nodes) == 1:  # pragma: no cover
             return list(self._nodes.keys())
-        sources = {source for source, target, direction in self._edges}
+        sources = self._edges.keys()
         retval = (
-            target for source, target, direction in self._edges if target not in sources
+            target
+            for source, target, direction in self.edges()
+            if target not in sources
         )
         return sorted(retval)
 

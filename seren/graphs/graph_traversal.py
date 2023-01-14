@@ -114,8 +114,8 @@ class GraphTraversal:
             relationships += {r for (s, t, r) in self.graph.outgoing_edges(node)}
         return set(relationships)
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no-cover
         return f"Graph - {len(list(self.graph.nodes()))} nodes ({len(self._active_nodes)} selected), {len(list(self.graph.edges()))} edges"
 
-    def __len__(self):
+    def __len__(self):  # pragma: no-cover
         return len(self._active_nodes)
