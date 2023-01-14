@@ -20,6 +20,14 @@
 
 ## depth_first_search // not written
 
+## connected_nodes // not written - return all the nodes are connected from a given node
+
+## navigatable_nodes // not written - return all the nodes navigatable from a given node
+
+## is_connected // not written - all of the nodes are connected
+
+## is_acyclic // not written - the graph does not have loops
+
 ## Analyzing a Graph
 
 ### is_connected // not written

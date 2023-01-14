@@ -1,7 +1,7 @@
 """
-Seren: Python Graph Library
+Seren
 
-(C) 2021 Justin Joyce.
+(C) 2023 Justin Joyce.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import types
+
 from pathlib import Path
-from .graph import Graph
-from .graph_traversal import GraphTraversal
-from .. import json, xmler
+
+from seren import xmler
+from seren.graphs.graph import Graph
+from seren.graphs.graph_traversal import GraphTraversal
 
 
 def walk(graph, nids=None):
@@ -31,7 +33,7 @@ def walk(graph, nids=None):
             the identity(s) of the node(s) to select
 
     Returns:
-        A JuOn instance
+        A Graph instance
     """
     if nids:
         nids = _make_a_list(nids)
@@ -43,7 +45,7 @@ def walk(graph, nids=None):
 
 def read_graphml(graphml_file: str):
     """
-    Load a GraphML file into a JuOn Graph
+    Load a GraphML file into a Graph
 
     Parameters:
         graphml_file: string
@@ -131,7 +133,7 @@ def _load_edge_file(path: Path):
 
 def load(path: str):
     """
-    Load a saved JuOn graph.
+    Load a saved Graph.
 
     Parameters:
         path: string

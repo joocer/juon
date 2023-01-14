@@ -43,9 +43,3 @@ https://gist.github.com/savarin/69acd246302567395f65ad6b97ee503d
 No explicit license when accessed - not attested but reasonably
 assumed to be MIT Licence as appears to be the prefered licence by
 Ezzeri Esa (original author).
-
-
-
-**JUON ICON IS FROM**
-
-https://gitlab.com/gillian.perard/gillicons
