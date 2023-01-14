@@ -1,5 +1,5 @@
 """
-Seren
+travers
 
 (C) 2023 Justin Joyce.
 
@@ -21,9 +21,9 @@ from pathlib import Path
 
 import orjson
 
-from seren import xmler
-from seren.graphs.graph import Graph
-from seren.graphs.graph_traversal import GraphTraversal
+from travers import xmler
+from travers.graphs.graph import Graph
+from travers.graphs.graph_traversal import GraphTraversal
 
 
 def walk(graph, nids=None):

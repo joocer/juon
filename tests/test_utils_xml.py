@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 from rich import traceback
-from seren import xmler
+from travers import xmler
 
 traceback.install()
 

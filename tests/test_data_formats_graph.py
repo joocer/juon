@@ -2,9 +2,9 @@ import os
 import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
-from seren import Graph
+from travers import Graph
 from data.graph_data import build_graph, graph_is_as_expected
-from seren import graphs
+from travers import graphs
 from rich import traceback
 
 traceback.install()

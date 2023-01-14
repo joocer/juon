@@ -1,5 +1,5 @@
 """
-Seren
+travers
 
 (C) 2023 Justin Joyce.
 
@@ -20,9 +20,9 @@ import types
 from pathlib import Path
 import orjson
 from pydantic import BaseModel
-from seren.graphs.graph import Graph
-from seren.graphs.graph_traversal import GraphTraversal
-from seren import xmler
+from travers.graphs.graph import Graph
+from travers.graphs.graph_traversal import GraphTraversal
+from travers import xmler
 
 
 class EdgeModel(BaseModel):
@@ -47,7 +47,7 @@ def walk(graph, nids=None):
             the identity(s) of the node(s) to select
 
     Returns:
-        A Diablo instance
+        A travers instance
     """
     if nids:
         nids = _make_a_list(nids)
@@ -59,7 +59,7 @@ def walk(graph, nids=None):
 
 def read_graphml(graphml_file: str):
     """
-    Load a GraphML file into a Diablo Graph
+    Load a GraphML file into a travers Graph
 
     Parameters:
         graphml_file: string
@@ -149,7 +149,7 @@ def _load_edge_file(path: Path):
 
 def load(path: str):
     """
-    Load a saved Diablo graph.
+    Load a saved travers graph.
 
     Parameters:
         path: string

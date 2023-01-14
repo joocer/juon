@@ -1,5 +1,5 @@
 """
-Seren
+travers
 
 (C) 2023 Justin Joyce.
 
@@ -16,6 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from seren.graphs.graph import Graph
-from seren.graphs.internals import load, read_graphml
-from seren.version import __version__
+from travers.graphs.graph import Graph
+from travers.graphs.internals import load, read_graphml
+from travers.version import __version__
