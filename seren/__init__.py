@@ -17,4 +17,5 @@ limitations under the License.
 """
 
 from seren.graphs.graph import Graph
+from seren.graphs.internals import load, read_graphml
 from seren.version import __version__
