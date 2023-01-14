@@ -1,7 +1,6 @@
 # python setup.py build_ext --inplace
 
 from setuptools import setup, find_packages  # type:ignore
-from Cython.Build import cythonize
 
 with open("seren/version.py", "r") as v:
     vers = v.read()
@@ -24,13 +23,5 @@ setup(
     author_email="justin.joyce@joocer.com",
     packages=find_packages(include=["seren", "seren.*"]),
     url="https://github.com/joocer/seren",
-    install_requires=required,
-    ext_modules=cythonize(
-        [
-            "seren/graphs/common.py",
-            "seren/graphs/graph_traversal.py",
-            "seren/graphs/graph.py",
-            "seren/graphs/internals.py",
-        ]
-    ),
+    install_requires=required
 )
