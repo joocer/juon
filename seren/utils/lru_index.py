@@ -10,7 +10,7 @@ millions of records, speed is important.
 
 #nodoc - don't add to the documentation wiki
 """
-from typing import Any, List
+from typing import Any
 
 
 class LruIndex(object):

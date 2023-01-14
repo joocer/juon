@@ -111,7 +111,7 @@ def _load_node_file(path: Path):
     nodes = []
     with open(path, "r", encoding="utf8") as node_file:
         for line in node_file:
-            node = json.parse(line)
+            node = orjson.loads(line)
             nodes.append(
                 (
                     node["nid"],
@@ -127,7 +127,7 @@ def _load_edge_file(path: Path):
     edges = []
     with open(path, "r", encoding="utf8") as edge_file:
         for line in edge_file:
-            node = json.parse(line)
+            node = orjson.loads(line)
             edges.append(
                 (
                     node["source"],

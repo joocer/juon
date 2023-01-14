@@ -294,7 +294,7 @@ class Graph(object):
             in_coming = self.ingoing_edges(nid)
             for out_nid in out_going:
                 for in_nid in in_coming:
-                    self.add_edge(in_nid[0], out_nid, in_nid[1])
+                    self.add_edge(in_nid[0], out_nid, in_nid[1])  # type:ignore
 
             self._edges = [
                 (source, target, direction)
