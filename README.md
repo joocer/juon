@@ -1,4 +1,4 @@
-<img src="icon.png" height=82px>
+<img src="https://raw.githubusercontent.com/joocer/travers/main/icon.png" height=82px>
 
 ### travers
 _Python Graph Library_
