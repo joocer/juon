@@ -17,11 +17,11 @@ limitations under the License.
 """
 
 from pathlib import Path
-from typing import Iterable, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import orjson
 
-from opteryx.exceptions import MissingDependencyError
+from travers.errors import MissingDependencyError
 
 
 class Graph(object):
@@ -139,7 +139,9 @@ class Graph(object):
             Generator of Tuples of (Source, Target and Relationship)
         """
         for source, records in self._edges.items():
-            yield from ((source, target, relationship) for target, relationship in records)
+            yield from (
+                (source, target, relationship) for target, relationship in records
+            )
 
     def breadth_first_search(self, source: str, depth: int = 100):
         """
@@ -192,7 +194,7 @@ class Graph(object):
             queue.popleft()
         return new_edges
 
-    def outgoing_edges(self, source) -> Iterable[Tuple]:
+    def outgoing_edges(self, source) -> List[Tuple]:
         """
         Get the list of edges traversable from a given node.
 
@@ -203,10 +205,10 @@ class Graph(object):
         Returns:
             Set of Tuples (Source, Target, Relationship)
         """
-        targets = self._edges.get(source) or {}
-        return {(source, t, r) for t, r in targets}
+        targets = self._edges.get(source) or []
+        return [(source, t, r) for t, r in targets]
 
-    def ingoing_edges(self, target) -> Iterable[Tuple]:
+    def ingoing_edges(self, target) -> List[Tuple]:
         """
         Get the list of edges which can traverse to a given node.
 
@@ -302,8 +304,12 @@ class Graph(object):
 
             # remove the edges where the node is the target
             for source, records in self._edges.items():
-                self._edges[source] = [(target, relationship)  for target, relationship in records if target != nid]
-            self._edges = {k:v for k,v in self._edges.items() if len(v) > 0}
+                self._edges[source] = [
+                    (target, relationship)
+                    for target, relationship in records
+                    if target != nid
+                ]
+            self._edges = {k: v for k, v in self._edges.items() if len(v) > 0}
 
             # wire up the old incoming and outgoing nodes, cartesian style
             for out_nid in out_going:
@@ -320,9 +326,19 @@ class Graph(object):
             new_records = []
             for target, relationship in records:
                 if target != before_nid:
-                    new_records.append((target, relationship,))
+                    new_records.append(
+                        (
+                            target,
+                            relationship,
+                        )
+                    )
                 else:
-                    new_records.append((nid, relationship,))
+                    new_records.append(
+                        (
+                            nid,
+                            relationship,
+                        )
+                    )
                 self._edges[source] = new_records
         # add an edge from the new nid to the old one
         self.add_edge(nid, before_nid)
