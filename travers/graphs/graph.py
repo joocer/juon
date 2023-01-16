@@ -17,11 +17,11 @@ limitations under the License.
 """
 
 from pathlib import Path
-from typing import Iterable, Tuple
+from typing import Iterable, Optional, Tuple
 
 import orjson
 
-from travers.errors import MissingDependencyError
+from opteryx.exceptions import MissingDependencyError
 
 
 class Graph(object):
@@ -76,7 +76,7 @@ class Graph(object):
             for nid, attr in self.nodes(data=True):
                 node_file.write(orjson.dumps({"nid": nid, "attributes": attr}) + b"\n")
 
-    def add_edge(self, source: str, target: str, relationship: str):
+    def add_edge(self, source: str, target: str, relationship: Optional[str] = None):
         """
         Add edge to the graph
 
@@ -103,7 +103,7 @@ class Graph(object):
         )
         self._edges[source] = list(set(targets))
 
-    def add_node(self, nid: str, attributes: dict = {}):
+    def add_node(self, nid: str, node):
         """
         Add node to the graph
 
@@ -113,7 +113,7 @@ class Graph(object):
             attributes: dictionary (optional)
                 The attributes of the node
         """
-        self._nodes[nid] = attributes
+        self._nodes[nid] = node
 
     def nodes(self, data=False):
         """
@@ -138,9 +138,8 @@ class Graph(object):
         Returns:
             Generator of Tuples of (Source, Target and Relationship)
         """
-        for s, records in self._edges.items():
-            for t, r in records:
-                yield s, t, r
+        for source, records in self._edges.items():
+            yield from ((source, target, relationship) for target, relationship in records)
 
     def breadth_first_search(self, source: str, depth: int = 100):
         """
@@ -296,37 +295,45 @@ class Graph(object):
             # link the nodes each side of the node being removed
             out_going = self.outgoing_edges(nid)
             in_coming = self.ingoing_edges(nid)
+
+            # remove edges where the node is the source
+            if nid in self._edges:
+                del self._edges[nid]
+
+            # remove the edges where the node is the target
+            for source, records in self._edges.items():
+                self._edges[source] = [(target, relationship)  for target, relationship in records if target != nid]
+            self._edges = {k:v for k,v in self._edges.items() if len(v) > 0}
+
+            # wire up the old incoming and outgoing nodes, cartesian style
             for out_nid in out_going:
                 for in_nid in in_coming:
-                    self.add_edge(in_nid[0], out_nid, in_nid[1])  # type:ignore
+                    self.add_edge(in_nid[0], out_nid[1], in_nid[1])  # type:ignore
 
-            self._edges = [
-                (source, target, direction)
-                for source, target, direction in self._edges
-                if nid not in (source, target)
-            ]
-
-    def insert_node_before(self, nid, operator, before_nid):
+    def insert_node_before(self, nid, node, before_nid):
         """rewrite the plan putting the new node before a given node"""
         # add the new node to the plan
-        self.add_operator(nid, operator)
+        self.add_node(nid, node)
         # change all the edges that were going into the old nid to the new one
-        self._edges = [
-            (source, target if target != before_nid else nid, direction)
-            for source, target, direction in self._edges
-        ]
+
+        for source, records in self._edges.items():
+            new_records = []
+            for target, relationship in records:
+                if target != before_nid:
+                    new_records.append((target, relationship,))
+                else:
+                    new_records.append((nid, relationship,))
+                self._edges[source] = new_records
         # add an edge from the new nid to the old one
         self.add_edge(nid, before_nid)
 
-    def insert_node_after(self, nid, operator, after_nid):
+    def insert_node_after(self, nid, node, after_nid):
         """rewrite the plan putting the new node after a given node"""
         # add the new node to the plan
-        self.add_operator(nid, operator)
+        self.add_node(nid, node)
         # change all the edges that were coming from the old nid to the new one
-        self._edges = [
-            (source if source != after_nid else nid, target, direction)
-            for source, target, direction in self._edges
-        ]
+        if after_nid in self._edges:
+            self._edges[nid] = self._edges.pop(after_nid)
         # add an edge from the new nid to the old one
         self.add_edge(after_nid, nid)
 
@@ -383,4 +390,4 @@ class Graph(object):
         return len(list(self.nodes()))
 
     def __getitem__(self, nid):
-        return self._nodes.get(nid, {})
+        return self._nodes.get(nid, None)
