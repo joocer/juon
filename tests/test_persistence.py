@@ -32,7 +32,6 @@ def test_save_graph():
 
 
 def test_networkx():
-
     graph = build_graph()
 
     n = graph.to_networkx()
@@ -40,13 +39,11 @@ def test_networkx():
 
 
 def test_read_graphml():
-
     graph = travers.read_graphml("tests/data/test.graphml")
     graph_is_as_expected(graph)
 
 
 if __name__ == "__main__":
-
     test_save_graph()
     test_networkx()
     test_read_graphml()

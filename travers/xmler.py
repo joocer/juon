@@ -16,16 +16,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from xml.etree import cElementTree as ElementTree  # nosec
 from collections import defaultdict
+from xml.etree import cElementTree as ElementTree  # nosec
 
 
 def _strip_namespace(entry):
     if isinstance(entry, dict):
-        for k in [k for k in entry.keys() if k.startswith("{")]:
+        for k in (k for k in entry.keys() if k.startswith("{")):
             k2 = k.split("}", 1)[1]
             entry[k2] = entry.pop(k)
-        for k in [k for k in entry.keys() if k.startswith("@{")]:
+        for k in (k for k in entry.keys() if k.startswith("@{")):
             k2 = k.split("}", 1)[1]
             entry[f"@{k2}"] = entry.pop(k)
         for child in entry:

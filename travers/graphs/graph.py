@@ -17,11 +17,35 @@ limitations under the License.
 """
 
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List
+from typing import Optional
+from typing import Tuple
 
 import orjson
 
 from travers.errors import MissingDependencyError
+
+
+def print_tree_inner(tree, prefix="", last=True):
+    """
+    Prints a nested dictionary as an ascii tree
+    """
+
+    yield prefix
+    if last:
+        yield "└─ "
+        prefix += "   "
+    else:
+        yield "├─ "
+        prefix += "│  "
+
+    yield str(tree["node"]) + "\n"
+
+    # Recursively print the children
+    count = len(tree["children"])
+    for i, child in enumerate(tree["children"]):
+        last = i == count - 1
+        yield from print_tree_inner(child, prefix, last)
 
 
 class Graph(object):
@@ -146,9 +170,7 @@ class Graph(object):
             Generator of Tuples of (Source, Target and Relationship)
         """
         for source, records in self._edges.items():
-            yield from (
-                (source, target, relationship) for target, relationship in records
-            )
+            yield from ((source, target, relationship) for target, relationship in records)
 
     def breadth_first_search(self, source: str, depth: int = 100):  # pragma: nocover
         """
@@ -201,6 +223,36 @@ class Graph(object):
             queue.popleft()
         return new_edges
 
+    def depth_first_search(
+        self, node: Optional[str] = None, visited: Optional[set] = None, depth: int = 0
+    ):
+        """
+        Returns a nested dictionary representing the graph as a tree
+        """
+        if node is None:
+            node = self.get_exit_points()[0]
+
+        if visited is None:
+            visited = set()
+
+        visited.add(node)
+
+        tree: dict = {
+            "type": str(self[node].node_type),
+            "node": str(self[node]),
+            "name": node,
+            "depth": depth,
+            "children": [],
+        }
+
+        for neighbor, _, relationship in self.ingoing_edges(node):
+            if neighbor not in visited:
+                child = self.depth_first_search(neighbor, visited, depth + 1)
+                child["relationship"] = relationship
+                tree["children"].append(child)  # type:ignore
+
+        return tree
+
     def outgoing_edges(self, source) -> List[Tuple]:
         """
         Get the list of edges traversable from a given node.
@@ -212,8 +264,7 @@ class Graph(object):
         Returns:
             Set of Tuples (Source, Target, Relationship)
         """
-        targets = self._edges.get(source) or []
-        return [(source, t, r) for t, r in targets]
+        return [(source, t, r) for t, r in self._edges.get(source, [])]
 
     def ingoing_edges(self, target) -> List[Tuple]:
         """
@@ -241,11 +292,7 @@ class Graph(object):
         while len(my_edges) > 0:
             # find all of the exits
             sources = {source for source, target, direction in my_edges}
-            exits = {
-                target
-                for source, target, direction in my_edges
-                if target not in sources
-            }
+            exits = {target for source, target, direction in my_edges if target not in sources}
 
             if len(exits) == 0:
                 return False
@@ -266,11 +313,7 @@ class Graph(object):
         if len(self._nodes) == 1:
             return list(self._nodes.keys())
         targets = {target for source, target, direction in self.edges()}
-        retval = (
-            source
-            for source, target, direction in self.edges()
-            if source not in targets
-        )
+        retval = (source for source, target, direction in self.edges() if source not in targets)
         return sorted(retval)
 
     def get_exit_points(self):
@@ -280,11 +323,7 @@ class Graph(object):
         if len(self._nodes) == 1:  # pragma: no cover
             return list(self._nodes.keys())
         sources = self._edges.keys()
-        retval = (
-            target
-            for source, target, direction in self.edges()
-            if target not in sources
-        )
+        retval = {target for source, target, direction in self.edges() if target not in sources}
         return sorted(retval)
 
     def remove_node(self, nid, heal: bool = False):
@@ -312,9 +351,7 @@ class Graph(object):
             # remove the edges where the node is the target
             for source, records in self._edges.items():
                 self._edges[source] = [
-                    (target, relationship)
-                    for target, relationship in records
-                    if target != nid
+                    (target, relationship) for target, relationship in records if target != nid
                 ]
             self._edges = {k: v for k, v in self._edges.items() if len(v) > 0}
 
@@ -372,10 +409,8 @@ class Graph(object):
         """
         try:
             import networkx as nx  # type:ignore
-        except ImportError:  # pragma: no cover
-            raise MissingDependencyError(
-                "`networx` is missing, please install or include in requirements.txt"
-            )
+        except ImportError as err:  # pragma: no cover
+            raise MissingDependencyError(err.name) from err
 
         g = nx.DiGraph()
         for s, t, r in self.edges():
@@ -395,22 +430,30 @@ class Graph(object):
             if node1 and node2:
                 g.add_edge(node1.get("node_type"), node2.get("node_type"), r)
             if node1:
-                g.add_node(
-                    node1.get("node_type"), {"node_type": node1.get("node_type")}
-                )
+                g.add_node(node1.get("node_type"), {"node_type": node1.get("node_type")})
             if node2:
-                g.add_node(
-                    node2.get("node_type"), {"node_type": node2.get("node_type")}
-                )
+                g.add_node(node2.get("node_type"), {"node_type": node2.get("node_type")})
         return g
 
     def __repr__(self):
-        return (
-            f"Graph - {len(list(self.nodes()))} nodes, {len(list(self.edges()))} edges"
-        )
+        return f"Graph - {len(list(self.nodes()))} nodes, {len(list(self.edges()))} edges"
 
     def __len__(self):
         return len(list(self.nodes()))
 
     def __getitem__(self, nid):
         return self._nodes.get(nid, None)
+
+    def __setitem__(self, nid, node):
+        if not nid in self._nodes:
+            raise ValueError("Cannot create nodes with [] syntax")
+        self._nodes[nid] = node
+
+    def __add__(self, other):
+        self._edges.update(other._edges)
+        self._nodes.update(other._nodes)
+        return self
+
+    def draw(self):
+        tree = self.depth_first_search()
+        return "".join(print_tree_inner(tree))

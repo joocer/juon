@@ -1,8 +1,9 @@
 # python setup.py build_ext --inplace
 
-from setuptools import setup, find_packages  # type:ignore
+from setuptools import find_packages  # type:ignore
+from setuptools import setup
 
-with open("travers/version.py", "r") as v:
+with open("travers/__version__.py", "r") as v:
     vers = v.read()
 exec(vers)  # nosec
 

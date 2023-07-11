@@ -11,7 +11,6 @@ traceback.install()
 
 
 def test_traversal():
-
     graph = build_graph()
     graph_is_as_expected(graph)
 
@@ -39,13 +38,10 @@ def test_traversal():
         "Sharlene",
     ]
     assert d_3.has("node_type", "Locality").active_nodes() == {"Toodyay"}
-    assert d_3.select(lambda r: r["node_type"] == "Restaurant").active_nodes() == {
-        "Kailis Bros"
-    }
+    assert d_3.select(lambda r: r["node_type"] == "Restaurant").active_nodes() == {"Kailis Bros"}
 
 
 if __name__ == "__main__":  # pragma: no cover
-
     test_traversal()
 
     print("okay")

@@ -18,7 +18,10 @@ limitations under the License.
 
 
 class MissingDependencyError(Exception):
-    pass
+    def __init__(self, dependency):
+        self.dependency = dependency
+        message = f"No module named '{dependency}' can be found, please install or include in requirements.txt"
+        super().__init__(message)
 
 
 class NodeNotFoundError(Exception):

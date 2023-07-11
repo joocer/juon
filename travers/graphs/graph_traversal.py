@@ -19,7 +19,6 @@ from typing import Callable
 
 
 class GraphTraversal:
-
     __slots__ = ("graph", "_active_nodes", "_active_nodes_cache")
 
     def __init__(self, graph, active_nodes: set = set()):
@@ -74,9 +73,7 @@ class GraphTraversal:
         Returns:
             GraphTraversal
         """
-        active_nodes = {
-            nid for nid, attrib in self.active_nodes(data=True) if filter(attrib)
-        }
+        active_nodes = {nid for nid, attrib in self.active_nodes(data=True) if filter(attrib)}
         return GraphTraversal(graph=self.graph, active_nodes=active_nodes)
 
     def has(self, key, value):
@@ -84,28 +81,18 @@ class GraphTraversal:
         Filters the active nodes by a key/value match
         """
         active_nodes = [
-            nid
-            for nid, attrib in self.active_nodes(data=True)
-            if attrib.get(key) == value
+            nid for nid, attrib in self.active_nodes(data=True) if attrib.get(key) == value
         ]
         return GraphTraversal(graph=self.graph, active_nodes=active_nodes)
 
     def values(self, key):
-        return list(
-            {
-                attrib[key]
-                for nid, attrib in self.active_nodes(data=True)
-                if key in attrib
-            }
-        )
+        return list({attrib[key] for nid, attrib in self.active_nodes(data=True) if key in attrib})
 
     def active_nodes(self, data=False):
         if not data:
             return self._active_nodes
         if not self._active_nodes_cache:
-            self._active_nodes_cache = [
-                (nid, self.graph[nid]) for nid in self._active_nodes
-            ]
+            self._active_nodes_cache = [(nid, self.graph[nid]) for nid in self._active_nodes]
         return self._active_nodes_cache
 
     def list_relationships(self):

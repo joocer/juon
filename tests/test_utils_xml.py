@@ -9,19 +9,20 @@ from travers import xmler
 traceback.install()
 
 
-T = """<mydocument has="an attribute">
-  <and>
-    <many>elements</many>
-    <many>more elements</many>
-  </and>
-  <plus a="complex">
-    element as well
-  </plus>
-</mydocument>"""
+def test_simple_xml_parse():
+    SIMPLE_XML = """
+    <mydocument has="an attribute">
+      <and>
+        <many>elements</many>
+        <many>more elements</many>
+      </and>
+      <plus a="complex">
+        element as well
+      </plus>
+    </mydocument>
+    """
 
-
-def test_xml_parse():
-    doc = xmler.parse(T)
+    doc = xmler.parse(SIMPLE_XML)
     assert doc["mydocument"]["@has"] == "an attribute"
     assert doc["mydocument"]["and"]["many"] == ["elements", "more elements"]
     assert doc["mydocument"]["plus"]["@a"] == "complex"
@@ -29,4 +30,4 @@ def test_xml_parse():
 
 
 if __name__ == "__main__":
-    test_xml_parse()
+    test_simple_xml_parse()

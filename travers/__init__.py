@@ -16,6 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from travers.__version__ import __author__
+from travers.__version__ import __version__
 from travers.graphs.graph import Graph
-from travers.graphs.internals import load, read_graphml
-from travers.version import __author__, __version__
+from travers.graphs.internals import load
+from travers.graphs.internals import read_graphml
