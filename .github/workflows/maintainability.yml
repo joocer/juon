@@ -21,4 +21,4 @@ jobs:
         run:  pip install -r $GITHUB_WORKSPACE/tests/requirements.txt
 
       - name: Execute Test
-        uses: joocer/quality-indicators@main
+        uses: joocer/quality-indicators@test
