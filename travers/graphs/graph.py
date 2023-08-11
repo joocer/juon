@@ -22,7 +22,7 @@ from typing import Optional
 from typing import Tuple
 
 import orjson
-from opteryx.exceptions import MissingDependencyError
+from travers.errors import MissingDependencyError
 
 
 def print_tree_inner(tree, prefix="", last=True):
